@@ -38,9 +38,14 @@ class MainPass : public RenderPass {
     virtual void initialize(RenderPassInitInfo *init_info) override;
     virtual void clear() override;
 
-    void preparePassData();
-
     void draw(
+        const RenderScene &scene,
+        ToneMappingPass &tone_mapping_pass,
+        UIPass &ui_pass,
+        CombineUIPass &combine_ui_pass
+    );
+
+    void drawForward(
         const RenderScene &scene,
         ToneMappingPass &tone_mapping_pass,
         UIPass &ui_pass,
@@ -52,7 +57,6 @@ class MainPass : public RenderPass {
   private:
     VkImageView m_point_light_shadow_color_image_view{};
     VkImageView m_directional_light_shadow_color_image_view{};
-    MeshPerFrameStorageBufferObject m_mesh_per_frame_storage_buffer_object{};
     std::vector<VkFramebuffer> m_swapchain_framebuffers{};
 
     void createAttachments();
@@ -72,7 +76,7 @@ class MainPass : public RenderPass {
     void drawMeshGbuffer(const RenderScene &scene);
     void drawDeferredLighting();
     void drawMeshLighting(const RenderScene &scene);
-    void drawSkybox(const RenderScene &scene);
+    void drawSkybox();
 };
 
 }  // namespace Vain

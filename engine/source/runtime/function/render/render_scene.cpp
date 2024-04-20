@@ -162,14 +162,18 @@ glm::mat4 calculateDirectionalLightView(
         glm::mat4 fix{1.0};
         fix[1][1] *= -1;
 
-        light_proj = glm::ortho(
-            std::max(fmin.x, smin.x),
-            std::min(fmax.x, smax.x),
-            std::max(fmin.y, smin.y),
-            std::min(fmax.y, smax.y),
-            -smax.z,
-            -std::max(fmin.z, smin.z)
-        );
+        if (!light_view_scene_bounding_box.empty()) {
+            light_proj = glm::ortho(
+                std::max(fmin.x, smin.x),
+                std::min(fmax.x, smax.x),
+                std::max(fmin.y, smin.y),
+                std::min(fmax.y, smax.y),
+                -smax.z,
+                -std::max(fmin.z, smin.z)
+            );
+        } else {
+            light_proj = glm::ortho(fmin.x, fmax.x, fmin.y, fmax.y, -fmax.z, -fmin.z);
+        }
         light_proj = fix * light_proj;
     }
 

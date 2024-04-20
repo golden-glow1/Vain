@@ -15,13 +15,9 @@ class PointLightPass : public RenderPass {
     virtual void initialize(RenderPassInitInfo *init_info) override;
     virtual void clear() override;
 
-    void preparePassData();
     void draw(const RenderScene &scene);
 
   private:
-    PointLightShadowPerFrameStorageBufferObject
-        m_point_light_shadow_per_frame_storage_buffer_object;
-
     void createAttachments();
     void createRenderPass();
     void createDescriptorSetLayouts();

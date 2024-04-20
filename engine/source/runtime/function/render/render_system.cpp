@@ -117,13 +117,9 @@ void RenderSystem::initializeUIRenderBackend(WindowUI *window_ui) {
 void RenderSystem::tick(float delta_time) {
     m_render_resource->updatePerFrame(*m_render_scene, *m_render_camera);
 
-    m_directional_light_pass->preparePassData();
-    m_point_light_pass->preparePassData();
-    m_main_pass->preparePassData();
-
     m_render_scene->updateVisibleNodes(*m_render_resource, *m_render_camera);
 
-    deferredRender();
+    render();
 }
 
 void RenderSystem::passUpdateAfterRecreateSwapchain() {
@@ -137,7 +133,7 @@ void RenderSystem::passUpdateAfterRecreateSwapchain() {
     );
 }
 
-void RenderSystem::deferredRender() {
+void RenderSystem::render() {
     m_render_resource->resetRingBufferOffset();
 
     m_ctx->waitForFlight();
@@ -153,9 +149,15 @@ void RenderSystem::deferredRender() {
     m_directional_light_pass->draw(*m_render_scene);
     m_point_light_pass->draw(*m_render_scene);
 
-    m_main_pass->draw(
-        *m_render_scene, *m_tone_mapping_pass, *m_ui_pass, *m_combine_ui_pass
-    );
+    if (pipeline_type == PipelineType::DEFERRED) {
+        m_main_pass->draw(
+            *m_render_scene, *m_tone_mapping_pass, *m_ui_pass, *m_combine_ui_pass
+        );
+    } else {
+        m_main_pass->drawForward(
+            *m_render_scene, *m_tone_mapping_pass, *m_ui_pass, *m_combine_ui_pass
+        );
+    }
 
     m_ctx->submitRendering([this]() { passUpdateAfterRecreateSwapchain(); });
 }

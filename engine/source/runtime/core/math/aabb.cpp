@@ -57,6 +57,10 @@ bool AxisAlignedBoundingBox::intersect(const glm::vec3 &position, float radius) 
 AxisAlignedBoundingBox boundingBoxTransform(
     const AxisAlignedBoundingBox &aabb, const glm::mat4 &transform
 ) {
+    if (aabb.empty()) {
+        return AxisAlignedBoundingBox();
+    }
+
     glm::vec3 const k_box_offset[8] = {
         glm::vec3{-1.0f, -1.0f,  1.0f},
         glm::vec3{ 1.0f, -1.0f,  1.0f},

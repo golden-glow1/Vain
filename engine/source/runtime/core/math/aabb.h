@@ -1,5 +1,6 @@
 #pragma once
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <limits>
 
@@ -24,6 +25,10 @@ class AxisAlignedBoundingBox {
     void join(const AxisAlignedBoundingBox &aabb);
 
     void transform(const glm::mat4 &mat);
+
+    bool empty() const {
+        return half_extent == glm::vec3{-std::numeric_limits<float>::infinity()};
+    }
 
     bool intersect(const glm::vec3 &center, float radius) const;
 };

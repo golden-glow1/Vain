@@ -60,7 +60,7 @@ void main() {
     vec4 clip_position = proj_view_matrix * vec4(world_position, 1.0);
 
     clip_position.z = clip_position.w * 0.99999;
-    gl_Position     = clip_position;
+    gl_Position = clip_position;
 
     out_uvw = normalize(world_position - camera_position);
 }

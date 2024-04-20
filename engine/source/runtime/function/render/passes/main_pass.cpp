@@ -75,10 +75,6 @@ void MainPass::clear() {
     vkDestroyRenderPass(m_ctx->device, render_pass, nullptr);
 }
 
-void MainPass::preparePassData() {
-    m_mesh_per_frame_storage_buffer_object = m_res->mesh_per_frame_storage_buffer_object;
-}
-
 void MainPass::draw(
     const RenderScene &scene,
     ToneMappingPass &tone_mapping_pass,
@@ -149,6 +145,128 @@ void MainPass::draw(
 
     {
         m_ctx->pushEvent(command_buffer, "Forward Lighting", color);
+
+        m_ctx->popEvent(command_buffer);
+    }
+
+    m_ctx->cmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+    {
+        m_ctx->pushEvent(command_buffer, "Tone Mapping", color);
+
+        tone_mapping_pass.draw();
+
+        m_ctx->popEvent(command_buffer);
+    }
+
+    m_ctx->cmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+    {
+        m_ctx->pushEvent(command_buffer, "UI", color);
+
+        VkClearAttachment clear_attachments[1]{};
+        clear_attachments[0].aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        clear_attachments[0].colorAttachment = 0;
+        clear_attachments[0].clearValue.color.float32[0] = 0.0;
+        clear_attachments[0].clearValue.color.float32[1] = 0.0;
+        clear_attachments[0].clearValue.color.float32[2] = 0.0;
+        clear_attachments[0].clearValue.color.float32[3] = 0.0;
+        VkClearRect clear_rects[1]{};
+        clear_rects[0].baseArrayLayer = 0;
+        clear_rects[0].layerCount = 1;
+        clear_rects[0].rect.offset.x = 0;
+        clear_rects[0].rect.offset.y = 0;
+        clear_rects[0].rect.extent = m_ctx->swapchain_extent;
+
+        m_ctx->cmdClearAttachments(command_buffer, 1, clear_attachments, 1, clear_rects);
+
+        ui_pass.draw();
+
+        m_ctx->popEvent(command_buffer);
+    }
+
+    m_ctx->cmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+    {
+        m_ctx->pushEvent(command_buffer, "Combine UI", color);
+
+        combine_ui_pass.draw();
+
+        m_ctx->popEvent(command_buffer);
+    }
+
+    m_ctx->cmdEndRenderPass(command_buffer);
+}
+
+void MainPass::drawForward(
+    const RenderScene &scene,
+    ToneMappingPass &tone_mapping_pass,
+    UIPass &ui_pass,
+    CombineUIPass &combine_ui_pass
+) {
+    VkCommandBuffer command_buffer = m_ctx->currentCommandBuffer();
+
+    {
+        VkRenderPassBeginInfo render_pass_begin_info{};
+        render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        render_pass_begin_info.renderPass = render_pass;
+        render_pass_begin_info.framebuffer =
+            m_swapchain_framebuffers[m_ctx->currentSwapchainImageIndex()];
+        render_pass_begin_info.renderArea.offset = {0, 0};
+        render_pass_begin_info.renderArea.extent = m_ctx->swapchain_extent;
+
+        VkClearValue clear_values[_attachment_count];
+        clear_values[_gbuffer_a].color = {
+            {0.0, 0.0, 0.0, 0.0}
+        };
+        clear_values[_gbuffer_b].color = {
+            {0.0, 0.0, 0.0, 0.0}
+        };
+        clear_values[_gbuffer_c].color = {
+            {0.0, 0.0, 0.0, 0.0}
+        };
+        clear_values[_backup_buffer_odd].color = {
+            {0.0, 0.0, 0.0, 1.0}
+        };
+        clear_values[_backup_buffer_even].color = {
+            {0.0, 0.0, 0.0, 1.0}
+        };
+        clear_values[_depth_buffer].depthStencil = {1.0, 0};
+        clear_values[_swapchain_image].color = {
+            {0.0, 0.0, 0.0, 1.0}
+        };
+
+        render_pass_begin_info.clearValueCount = ARRAY_SIZE(clear_values);
+        render_pass_begin_info.pClearValues = clear_values;
+
+        m_ctx->cmdBeginRenderPass(
+            command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE
+        );
+    }
+
+    float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    {
+        m_ctx->pushEvent(command_buffer, "Base Pass", color);
+
+        m_ctx->popEvent(command_buffer);
+    }
+
+    m_ctx->cmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+    {
+        m_ctx->pushEvent(command_buffer, "Deferred Lighting", color);
+
+        m_ctx->popEvent(command_buffer);
+    }
+
+    m_ctx->cmdNextSubpass(command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+    {
+        m_ctx->pushEvent(command_buffer, "Forward Lighting", color);
+
+        drawMeshLighting(scene);
+        drawSkybox();
 
         m_ctx->popEvent(command_buffer);
     }
@@ -1887,7 +2005,7 @@ void MainPass::drawMeshGbuffer(const RenderScene &scene) {
                                             .global_upload_ringbuffer_memory_pointer) +
             per_frame_dynamic_offset
         );
-    *per_frame_storage_buffer_object = m_mesh_per_frame_storage_buffer_object;
+    *per_frame_storage_buffer_object = m_res->mesh_per_frame_storage_buffer_object;
 
     for (auto &[material, mesh_batch] : main_camera_mesh_drawcall_batch) {
         m_ctx->cmdBindDescriptorSets(
@@ -1955,7 +2073,7 @@ void MainPass::drawMeshGbuffer(const RenderScene &scene) {
                             m_res->global_render_resource.storage_buffer
                                 .global_upload_ringbuffer_memory_pointer
                         ) +
-                        per_frame_dynamic_offset
+                        per_drawcall_dynamic_offset
                     );
                 for (uint32_t i = 0; i < current_instance_count; ++i) {
                     per_drawcall_storage_buffer_object->mesh_instances[i].model_matrix =
@@ -2036,7 +2154,7 @@ void MainPass::drawDeferredLighting() {
                                             .global_upload_ringbuffer_memory_pointer) +
             per_frame_dynamic_offset
         );
-    *per_frame_storage_buffer_object = m_mesh_per_frame_storage_buffer_object;
+    *per_frame_storage_buffer_object = m_res->mesh_per_frame_storage_buffer_object;
 
     VkDescriptorSet sets[3] = {
         descriptor_sets[_layout_type_mesh_global],
@@ -2062,8 +2180,214 @@ void MainPass::drawDeferredLighting() {
     m_ctx->popEvent(command_buffer);
 }
 
-void MainPass::drawMeshLighting(const RenderScene &scene) {}
+void MainPass::drawMeshLighting(const RenderScene &scene) {
+    using MeshBatch = std::unordered_map<const MeshResource *, std::vector<glm::mat4>>;
 
-void MainPass::drawSkybox(const RenderScene &scene) {}
+    std::unordered_map<const PBRMaterialResource *, MeshBatch>
+        main_camera_mesh_drawcall_batch;
+
+    for (const auto &node : scene.main_camera_visible_mesh_nodes) {
+        auto &mesh_batch = main_camera_mesh_drawcall_batch[node.ref_material];
+        auto &batch_nodes = mesh_batch[node.ref_mesh];
+
+        batch_nodes.push_back(node.model_matrix);
+    }
+
+    VkCommandBuffer command_buffer = m_ctx->currentCommandBuffer();
+
+    float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+    m_ctx->pushEvent(command_buffer, "Mesh Lighting", color);
+
+    m_ctx->cmdBindPipeline(
+        command_buffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        pipelines[_pipeline_type_mesh_lighting]
+    );
+
+    VkViewport viewport = {
+        0.0,
+        0.0,
+        static_cast<float>(m_ctx->swapchain_extent.width),
+        static_cast<float>(m_ctx->swapchain_extent.height),
+        0.0,
+        1.0
+    };
+    VkRect2D scissor = {
+        0, 0, m_ctx->swapchain_extent.width, m_ctx->swapchain_extent.height
+    };
+
+    m_ctx->cmdSetViewport(command_buffer, 0, 1, &viewport);
+    m_ctx->cmdSetScissor(command_buffer, 0, 1, &scissor);
+
+    uint32_t per_frame_dynamic_offset = ROUND_UP(
+        m_res->global_render_resource.storage_buffer
+            .global_upload_ringbuffers_end[m_ctx->currentFrameIndex()],
+        m_res->global_render_resource.storage_buffer.min_storage_buffer_offset_alignment
+    );
+    m_res->global_render_resource.storage_buffer
+        .global_upload_ringbuffers_end[m_ctx->currentFrameIndex()] =
+        per_frame_dynamic_offset + sizeof(MeshPerFrameStorageBufferObject);
+    assert(
+        m_res->global_render_resource.storage_buffer
+            .global_upload_ringbuffers_end[m_ctx->currentFrameIndex()] <=
+        m_res->global_render_resource.storage_buffer
+                .global_upload_ringbuffers_begin[m_ctx->currentFrameIndex()] +
+            m_res->global_render_resource.storage_buffer
+                .global_upload_ringbuffers_size[m_ctx->currentFrameIndex()]
+    );
+    MeshPerFrameStorageBufferObject *per_frame_storage_buffer_object =
+        reinterpret_cast<MeshPerFrameStorageBufferObject *>(
+            reinterpret_cast<uintptr_t>(m_res->global_render_resource.storage_buffer
+                                            .global_upload_ringbuffer_memory_pointer) +
+            per_frame_dynamic_offset
+        );
+    *per_frame_storage_buffer_object = m_res->mesh_per_frame_storage_buffer_object;
+
+    for (auto &[material, mesh_batch] : main_camera_mesh_drawcall_batch) {
+        m_ctx->cmdBindDescriptorSets(
+            command_buffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            pipeline_layouts[_pipeline_type_mesh_gbuffer],
+            1,
+            1,
+            &material->material_descriptor_set,
+            0,
+            nullptr
+        );
+
+        for (auto &[mesh, batch_nodes] : mesh_batch) {
+            uint32_t total_instance_count = batch_nodes.size();
+            if (total_instance_count == 0) {
+                continue;
+            }
+
+            VkDeviceSize offset = 0;
+            m_ctx->cmdBindVertexBuffers(
+                command_buffer, 0, 1, &mesh->vertex_buffer, &offset
+            );
+            m_ctx->cmdBindIndexBuffer(
+                command_buffer, mesh->index_buffer, 0, VK_INDEX_TYPE_UINT16
+            );
+
+            uint32_t per_drawcall_max_instance = k_mesh_per_drawcall_max_instance_count;
+            uint32_t drawcall_count =
+                ROUND_UP(total_instance_count, per_drawcall_max_instance) /
+                per_drawcall_max_instance;
+
+            for (uint32_t drawcall_index = 0; drawcall_index < drawcall_count;
+                 ++drawcall_index) {
+                uint32_t current_instance_count = per_drawcall_max_instance;
+                if (total_instance_count - per_drawcall_max_instance * drawcall_index <
+                    per_drawcall_max_instance) {
+                    // rest
+                    current_instance_count =
+                        total_instance_count - per_drawcall_max_instance * drawcall_index;
+                }
+
+                uint32_t per_drawcall_dynamic_offset = ROUND_UP(
+                    m_res->global_render_resource.storage_buffer
+                        .global_upload_ringbuffers_end[m_ctx->currentFrameIndex()],
+                    m_res->global_render_resource.storage_buffer
+                        .min_storage_buffer_offset_alignment
+                );
+                m_res->global_render_resource.storage_buffer
+                    .global_upload_ringbuffers_end[m_ctx->currentFrameIndex()] =
+                    per_drawcall_dynamic_offset +
+                    sizeof(MeshPerDrawcallStorageBufferObject);
+                assert(
+                    m_res->global_render_resource.storage_buffer
+                        .global_upload_ringbuffers_end[m_ctx->currentFrameIndex()] <=
+                    m_res->global_render_resource.storage_buffer
+                            .global_upload_ringbuffers_begin[m_ctx->currentFrameIndex()] +
+                        m_res->global_render_resource.storage_buffer
+                            .global_upload_ringbuffers_size[m_ctx->currentFrameIndex()]
+                );
+
+                MeshPerDrawcallStorageBufferObject *per_drawcall_storage_buffer_object =
+                    reinterpret_cast<MeshPerDrawcallStorageBufferObject *>(
+                        reinterpret_cast<uintptr_t>(
+                            m_res->global_render_resource.storage_buffer
+                                .global_upload_ringbuffer_memory_pointer
+                        ) +
+                        per_drawcall_dynamic_offset
+                    );
+                for (uint32_t i = 0; i < current_instance_count; ++i) {
+                    per_drawcall_storage_buffer_object->mesh_instances[i].model_matrix =
+                        batch_nodes[per_drawcall_max_instance * drawcall_index + i];
+                }
+
+                uint32_t dynamic_offsets[2] = {
+                    per_frame_dynamic_offset, per_drawcall_dynamic_offset
+                };
+
+                m_ctx->cmdBindDescriptorSets(
+                    command_buffer,
+                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    pipeline_layouts[_pipeline_type_mesh_gbuffer],
+                    0,
+                    1,
+                    &descriptor_sets[_layout_type_mesh_global],
+                    2,
+                    dynamic_offsets
+                );
+
+                m_ctx->cmdDrawIndexed(
+                    command_buffer, mesh->index_count, current_instance_count, 0, 0, 0
+                );
+            }
+        }
+    }
+
+    m_ctx->popEvent(command_buffer);
+}
+
+void MainPass::drawSkybox() {
+    uint32_t per_frame_dynamic_offset = ROUND_UP(
+        m_res->global_render_resource.storage_buffer
+            .global_upload_ringbuffers_end[m_ctx->currentFrameIndex()],
+        m_res->global_render_resource.storage_buffer.min_storage_buffer_offset_alignment
+    );
+    m_res->global_render_resource.storage_buffer
+        .global_upload_ringbuffers_end[m_ctx->currentFrameIndex()] =
+        per_frame_dynamic_offset + sizeof(MeshPerFrameStorageBufferObject);
+    assert(
+        m_res->global_render_resource.storage_buffer
+            .global_upload_ringbuffers_end[m_ctx->currentFrameIndex()] <=
+        m_res->global_render_resource.storage_buffer
+                .global_upload_ringbuffers_begin[m_ctx->currentFrameIndex()] +
+            m_res->global_render_resource.storage_buffer
+                .global_upload_ringbuffers_size[m_ctx->currentFrameIndex()]
+    );
+    MeshPerFrameStorageBufferObject *per_frame_storage_buffer_object =
+        reinterpret_cast<MeshPerFrameStorageBufferObject *>(
+            reinterpret_cast<uintptr_t>(m_res->global_render_resource.storage_buffer
+                                            .global_upload_ringbuffer_memory_pointer) +
+            per_frame_dynamic_offset
+        );
+    *per_frame_storage_buffer_object = m_res->mesh_per_frame_storage_buffer_object;
+
+    VkCommandBuffer command_buffer = m_ctx->currentCommandBuffer();
+
+    float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+    m_ctx->pushEvent(command_buffer, "Skybox", color);
+
+    m_ctx->cmdBindPipeline(
+        command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines[_pipeline_type_skybox]
+    );
+    m_ctx->cmdBindDescriptorSets(
+        command_buffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        pipeline_layouts[_pipeline_type_skybox],
+        0,
+        1,
+        &descriptor_sets[_layout_type_skybox],
+        1,
+        &per_frame_dynamic_offset
+    );
+
+    m_ctx->cmdDraw(command_buffer, 36, 1, 0, 0);
+
+    m_ctx->popEvent(command_buffer);
+}
 
 }  // namespace Vain

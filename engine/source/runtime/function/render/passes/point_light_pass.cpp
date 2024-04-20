@@ -50,11 +50,6 @@ void PointLightPass::clear() {
     }
 }
 
-void PointLightPass::preparePassData() {
-    m_point_light_shadow_per_frame_storage_buffer_object =
-        m_res->point_light_shadow_per_frame_storage_buffer_object;
-}
-
 void PointLightPass::draw(const RenderScene &scene) {
     using MeshBatch = std::unordered_map<const MeshResource *, std::vector<glm::mat4>>;
 
@@ -128,7 +123,7 @@ void PointLightPass::draw(const RenderScene &scene) {
                 per_frame_dynamic_offset
             );
         *per_frame_storage_buffer_object =
-            m_point_light_shadow_per_frame_storage_buffer_object;
+            m_res->point_light_shadow_per_frame_storage_buffer_object;
 
         for (auto &[material, mesh_batch] : point_light_mesh_drawcall_batch) {
             for (auto &[mesh, batch_nodes] : mesh_batch) {
@@ -190,7 +185,7 @@ void PointLightPass::draw(const RenderScene &scene) {
                                     m_res->global_render_resource.storage_buffer
                                         .global_upload_ringbuffer_memory_pointer
                                 ) +
-                                per_frame_dynamic_offset
+                                per_drawcall_dynamic_offset
                             );
                     for (uint32_t i = 0; i < current_instance_count; ++i) {
                         per_drawcall_storage_buffer_object->mesh_instances[i]

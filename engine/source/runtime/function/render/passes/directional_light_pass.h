@@ -15,13 +15,9 @@ class DirectionalLightPass : public RenderPass {
     virtual void initialize(RenderPassInitInfo *init_info) override;
     virtual void clear() override;
 
-    void preparePassData();
     void draw(const RenderScene &scene);
 
   private:
-    DirectionalLightShadowPerFrameStorageBufferObject
-        m_directional_light_shadow_per_frame_storage_buffer_object;
-
     void createAttachments();
     void createRenderPass();
     void createDescriptorSetLayouts();

@@ -20,8 +20,12 @@ class UIPass;
 
 class WindowUI;
 
+enum class PipelineType { FORWARD, DEFERRED };
+
 class RenderSystem {
   public:
+    PipelineType pipeline_type = PipelineType::FORWARD;
+
     RenderSystem() = default;
     ~RenderSystem();
 
@@ -47,7 +51,7 @@ class RenderSystem {
 
     void passUpdateAfterRecreateSwapchain();
 
-    void deferredRender();
+    void render();
 };
 
 }  // namespace Vain
