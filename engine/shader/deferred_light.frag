@@ -77,10 +77,8 @@ void main() {
     vec3 result_color = vec3(0.0, 0.0, 0.0);
 
     if (gbuffer.shading_model_id == SHADING_MODEL_ID_UNLIT) {
-        vec3 in_uvw            = normalize(in_world_position - camera_position);
-        vec3 origin_sample_uvw = vec3(in_uvw.x, in_uvw.z, in_uvw.y);
-
-        result_color = textureLod(skybox_sampler, origin_sample_uvw, 0.0).rgb;
+        vec3 in_uvw = normalize(in_world_position - camera_position);
+        result_color = textureLod(skybox_sampler, in_uvw, 0.0).rgb;
     } else if (gbuffer.shading_model_id == SHADING_MODEL_ID_DEFAULT_LIT) {
         #include "inc/mesh_lighting.inl"
     }
