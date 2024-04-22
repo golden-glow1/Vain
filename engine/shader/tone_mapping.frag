@@ -18,6 +18,5 @@ void main() {
     vec3 color = subpassLoad(in_color).rgb;
     color = uncharted2Tonemap(color * 4.5f);
     color = color * (1.0f / uncharted2Tonemap(vec3(11.2f)));    
-    color = vec3(pow(color.x, 1.0 / 2.2), pow(color.y, 1.0 / 2.2), pow(color.z, 1.0 / 2.2));
     out_color = vec4(color, 1.0);
 }

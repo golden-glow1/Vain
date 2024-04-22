@@ -57,6 +57,10 @@ class WindowSystem {
         m_onWindowSizeFunc.push_back(func);
     }
 
+    bool isMouseButtonDown(int button) const;
+
+    void setInputMode(int mode, int value) const;
+
   private:
     GLFWwindow *m_window{nullptr};
     int m_width{0};
@@ -65,16 +69,16 @@ class WindowSystem {
     bool m_is_focus_mode{false};
 
     // function pointers
-    std::vector<OnResetFunc> m_onResetFunc;
-    std::vector<OnKeyFunc> m_onKeyFunc;
-    std::vector<OnCharFunc> m_onCharFunc;
-    std::vector<OnCharModsFunc> m_onCharModsFunc;
-    std::vector<OnMouseButtonFunc> m_onMouseButtonFunc;
-    std::vector<OnCursorPosFunc> m_onCursorPosFunc;
-    std::vector<OnCursorEnterFunc> m_onCursorEnterFunc;
-    std::vector<OnScrollFunc> m_onScrollFunc;
-    std::vector<OnDropFunc> m_onDropFunc;
-    std::vector<OnWindowSizeFunc> m_onWindowSizeFunc;
+    std::vector<OnResetFunc> m_onResetFunc{};
+    std::vector<OnKeyFunc> m_onKeyFunc{};
+    std::vector<OnCharFunc> m_onCharFunc{};
+    std::vector<OnCharModsFunc> m_onCharModsFunc{};
+    std::vector<OnMouseButtonFunc> m_onMouseButtonFunc{};
+    std::vector<OnCursorPosFunc> m_onCursorPosFunc{};
+    std::vector<OnCursorEnterFunc> m_onCursorEnterFunc{};
+    std::vector<OnScrollFunc> m_onScrollFunc{};
+    std::vector<OnDropFunc> m_onDropFunc{};
+    std::vector<OnWindowSizeFunc> m_onWindowSizeFunc{};
 
     // window event callbacks
     static void keyCallback(

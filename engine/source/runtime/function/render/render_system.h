@@ -36,6 +36,8 @@ class RenderSystem {
 
     void tick(float delta_time);
 
+    RenderCamera *getRenderCamera() { return m_render_camera.get(); }
+
   private:
     std::unique_ptr<VulkanContext> m_ctx{};
     std::unique_ptr<RenderResource> m_render_resource{};

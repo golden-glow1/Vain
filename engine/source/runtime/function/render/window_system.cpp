@@ -59,4 +59,14 @@ std::array<int, 2> WindowSystem::getWindowSize() const {
     return std::array<int, 2>({m_width, m_height});
 }
 
+bool WindowSystem::isMouseButtonDown(int button) const {
+    if (button < GLFW_MOUSE_BUTTON_1 || button > GLFW_MOUSE_BUTTON_LAST) {
+        return false;
+    }
+    return glfwGetMouseButton(m_window, button) == GLFW_PRESS;
+}
+void WindowSystem::setInputMode(int mode, int value) const {
+    glfwSetInputMode(m_window, mode, value);
+}
+
 }  // namespace Vain
