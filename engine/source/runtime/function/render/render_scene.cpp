@@ -160,7 +160,7 @@ glm::mat4 calculateDirectionalLightView(
         glm::vec3 smax = light_view_scene_bounding_box.maxCorner();
 
         glm::mat4 fix{1.0};
-        fix[1][1] *= -1;
+        fix[1][1] = -1.0;
 
         if (!light_view_scene_bounding_box.empty()) {
             light_proj = glm::ortho(

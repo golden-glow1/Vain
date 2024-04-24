@@ -120,6 +120,12 @@ class RenderResource {
     const MeshResource *getEntityMesh(const RenderEntity &entity) const;
     const PBRMaterialResource *getEntityMaterial(const RenderEntity &entity) const;
 
+    void freeMeshResource(const MeshResource &mesh);
+    void freePBRMaterialResource(const PBRMaterialResource &material);
+
+    void clearMesh();
+    void clearMaterial();
+
   private:
     VulkanContext *m_ctx{};
     bool m_global_uploaded{false};
@@ -140,12 +146,10 @@ class RenderResource {
     void uploadIndexBuffer(
         MeshResource &mesh, const void *index_data, size_t index_buffer_size
     );
-    void freeMeshResource(MeshResource &mesh);
 
     void uploadMaterialUniformBuffer(
         PBRMaterialResource &material, const RenderEntity &entity
     );
-    void freePBRMaterialResource(PBRMaterialResource &material);
     void freeTextureResource(VkImage image, VkImageView view, VmaAllocation allocation);
 };
 

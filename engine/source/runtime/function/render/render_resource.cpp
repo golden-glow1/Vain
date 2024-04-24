@@ -15,13 +15,9 @@ RenderResource::~RenderResource() { clear(); }
 void RenderResource::initialize(VulkanContext *ctx) { m_ctx = ctx; }
 
 void RenderResource::clear() {
-    for (auto &[_, mesh] : m_mesh_map) {
-        freeMeshResource(mesh);
-    }
+    clearMesh();
 
-    for (auto &[_, material] : m_material_map) {
-        freePBRMaterialResource(material);
-    }
+    clearMaterial();
 
     freeIBLResource();
 
@@ -452,6 +448,18 @@ const PBRMaterialResource *RenderResource::getEntityMaterial(const RenderEntity 
     }
 }
 
+void RenderResource::clearMesh() {
+    for (auto &[_, mesh] : m_mesh_map) {
+        freeMeshResource(mesh);
+    }
+}
+
+void RenderResource::clearMaterial() {
+    for (auto &[_, material] : m_material_map) {
+        freePBRMaterialResource(material);
+    }
+}
+
 void RenderResource::createAndMapStorageBuffer() {
     uint32_t frames_in_flight = m_ctx->k_max_frames_in_flight;
     StorageBuffer &storage_buffer = global_render_resource.storage_buffer;
@@ -754,15 +762,13 @@ void RenderResource::uploadIndexBuffer(
     vkFreeMemory(m_ctx->device, inefficient_staging_buffer_memory, nullptr);
 }
 
-void RenderResource::freeMeshResource(MeshResource &mesh) {
+void RenderResource::freeMeshResource(const MeshResource &mesh) {
     vmaDestroyBuffer(
         m_ctx->assets_allocator, mesh.vertex_buffer, mesh.vertex_buffer_allocation
     );
     vmaDestroyBuffer(
         m_ctx->assets_allocator, mesh.index_buffer, mesh.index_buffer_allocation
     );
-    mesh.vertex_count = 0;
-    mesh.index_count = 0;
 }
 
 void RenderResource::uploadMaterialUniformBuffer(
@@ -838,7 +844,7 @@ void RenderResource::uploadMaterialUniformBuffer(
     vkFreeMemory(m_ctx->device, inefficient_staging_buffer_memory, nullptr);
 }
 
-void RenderResource::freePBRMaterialResource(PBRMaterialResource &material) {
+void RenderResource::freePBRMaterialResource(const PBRMaterialResource &material) {
     freeTextureResource(
         material.base_color_texture_image,
         material.base_color_image_view,

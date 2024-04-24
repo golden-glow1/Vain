@@ -14,4 +14,13 @@ struct RenderSwapData {
     std::optional<std::deque<GameObjectDesc>> game_objects_to_delete{};
 };
 
+class RenderSwapContext {
+  public:
+    RenderSwapData swap_data{};
+
+  private:
+    bool isReadyToSwap() const;
+    void swap();
+};
+
 }  // namespace Vain
