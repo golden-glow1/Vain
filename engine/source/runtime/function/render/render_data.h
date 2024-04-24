@@ -61,8 +61,6 @@ std::shared_ptr<TextureData> loadTexture(const std::string &file, bool is_srgb =
 
 PBRMaterialData loadPBRMaterial(const PBRMaterialDesc &desc);
 
-std::shared_ptr<MeshData> loadMeshDataFromObjFile(
-    const std::string &file, AxisAlignedBoundingBox &aabb
-);
+MeshData loadMeshDataFromObjFile(const std::string &file, AxisAlignedBoundingBox &aabb);
 
 }  // namespace Vain

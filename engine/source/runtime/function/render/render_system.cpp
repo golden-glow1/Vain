@@ -115,11 +115,100 @@ void RenderSystem::initializeUIRenderBackend(WindowUI *window_ui) {
 }
 
 void RenderSystem::tick(float delta_time) {
+    processSwapData();
+
     m_render_resource->updatePerFrame(*m_render_scene, *m_render_camera);
 
     m_render_scene->updateVisibleNodes(*m_render_resource, *m_render_camera);
 
     render();
+}
+
+void RenderSystem::processSwapData() {
+    auto swap_data = m_swap_context.getRenderSwapData();
+
+    AssetManager *asset_manager = g_runtime_global_context.asset_manager.get();
+    assert(asset_manager);
+
+    if (swap_data->ibl_swap_data.has_value()) {
+        m_render_resource->uploadGlobalRenderResource(swap_data->ibl_swap_data.value());
+
+        swap_data->ibl_swap_data.reset();
+    }
+
+    if (swap_data->dirty_game_objects.has_value()) {
+        while (!swap_data->dirty_game_objects->empty()) {
+            GameObjectDesc gobject = swap_data->dirty_game_objects->front();
+
+            for (size_t part_id = 0; part_id < gobject.object_parts.size(); ++part_id) {
+                const auto &gobject_part = gobject.object_parts[part_id];
+                GObjectPartID go_part_id = {gobject.go_id, part_id};
+
+                bool is_entity_in_scene =
+                    m_render_scene->entity_id_allocator.hasAsset(go_part_id);
+                RenderEntity render_entity{};
+                render_entity.entity_id =
+                    m_render_scene->entity_id_allocator.allocateGuid(go_part_id);
+                render_entity.model_matrix = gobject_part.transform.matrix();
+
+                MeshDesc mesh_desc = {gobject_part.mesh_desc.mesh_file};
+                bool is_mesh_loaded =
+                    m_render_scene->mesh_guid_allocator.hasAsset(mesh_desc);
+                MeshData mesh_data{};
+                if (!is_mesh_loaded) {
+                    mesh_data =
+                        loadMeshDataFromObjFile(mesh_desc.mesh_file, render_entity.aabb);
+                } else {
+                    render_entity.aabb = m_render_scene->aabb_cache[mesh_desc];
+                }
+                render_entity.mesh_asset_id =
+                    m_render_scene->mesh_guid_allocator.allocateGuid(mesh_desc);
+
+                PBRMaterialDesc material_desc{};
+                if (gobject_part.material_desc.with_texture) {
+                    material_desc = {
+                        material_desc.base_color_file,
+                        material_desc.normal_file,
+                        material_desc.metallic_file,
+                        material_desc.roughness_file,
+                        material_desc.occlusion_file,
+                        material_desc.emissive_file
+                    };
+                }
+                bool is_material_loaded =
+                    m_render_scene->pbr_material_guid_allocator.hasAsset(material_desc);
+                PBRMaterialData material_data{};
+                if (!is_material_loaded) {
+                    material_data = loadPBRMaterial(material_desc);
+                }
+                render_entity.material_asset_id =
+                    m_render_scene->pbr_material_guid_allocator.allocateGuid(material_desc
+                    );
+
+                if (!is_mesh_loaded) {
+                    m_render_resource->uploadMesh(render_entity, mesh_data);
+                }
+
+                if (!is_material_loaded) {
+                    m_render_resource->uploadPBRMaterial(render_entity, material_data);
+                }
+
+                if (!is_entity_in_scene) {
+                    m_render_scene->render_entities.push_back(render_entity);
+                } else {
+                    for (auto &entity : m_render_scene->render_entities) {
+                        if (entity.entity_id == render_entity.entity_id) {
+                            entity = render_entity;
+                        }
+                    }
+                }
+            }
+
+            swap_data->dirty_game_objects->pop_front();
+        }
+
+        swap_data->dirty_game_objects.reset();
+    }
 }
 
 void RenderSystem::passUpdateAfterRecreateSwapchain() {

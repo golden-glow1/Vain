@@ -24,6 +24,7 @@ class RenderScene {
     AssetGuidAllocator<GObjectPartID> entity_id_allocator{};
     AssetGuidAllocator<MeshDesc> mesh_guid_allocator{};
     AssetGuidAllocator<PBRMaterialDesc> pbr_material_guid_allocator{};
+    std::unordered_map<MeshDesc, AxisAlignedBoundingBox> aabb_cache{};
 
     Color ambient_light{};
     DirectionalLightDesc directional_light{};
@@ -45,8 +46,6 @@ class RenderScene {
     void clearForReloading();
 
   private:
-    std::unordered_map<MeshDesc, AxisAlignedBoundingBox> m_aabb_cache{};
-
     void updateVisibleNodesDirectionalLight(
         RenderResource &resource, RenderCamera &camera
     );

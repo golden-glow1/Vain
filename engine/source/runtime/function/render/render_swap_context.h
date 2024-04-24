@@ -14,13 +14,22 @@ struct RenderSwapData {
     std::optional<std::deque<GameObjectDesc>> game_objects_to_delete{};
 };
 
+enum SwapDataType : uint8_t {
+    LOGIC = 0,
+    RENDER,
+};
+
 class RenderSwapContext {
   public:
-    RenderSwapData swap_data{};
+    RenderSwapData *getLogicSwapData();
+    RenderSwapData *getRenderSwapData();
+
+    void swapData();
 
   private:
-    bool isReadyToSwap() const;
-    void swap();
+    uint8_t m_logic_swap_data_index{LOGIC};
+    uint8_t m_render_swap_data_index{RENDER};
+    RenderSwapData m_swap_data[2]{};
 };
 
 }  // namespace Vain

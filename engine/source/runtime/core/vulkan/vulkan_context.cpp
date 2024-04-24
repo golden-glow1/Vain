@@ -987,12 +987,12 @@ void VulkanContext::createSwapchain() {
         chosen_extent.width = std::clamp(
             chosen_extent.width,
             swapchain_support_details.capabilities.minImageExtent.width,
-            swapchain_support_details.capabilities.minImageExtent.width
+            swapchain_support_details.capabilities.maxImageExtent.width
         );
         chosen_extent.height = std::clamp(
             chosen_extent.height,
             swapchain_support_details.capabilities.minImageExtent.height,
-            swapchain_support_details.capabilities.minImageExtent.height
+            swapchain_support_details.capabilities.maxImageExtent.height
         );
     }
 

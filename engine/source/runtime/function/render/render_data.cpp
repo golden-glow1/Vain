@@ -122,11 +122,9 @@ PBRMaterialData loadPBRMaterial(const PBRMaterialDesc &desc) {
     return data;
 }
 
-std::shared_ptr<MeshData> loadMeshDataFromObjFile(
-    const std::string &file, AxisAlignedBoundingBox &aabb
-) {
+MeshData loadMeshDataFromObjFile(const std::string &file, AxisAlignedBoundingBox &aabb) {
     AssetManager *asset_manager = g_runtime_global_context.asset_manager.get();
-    std::shared_ptr<MeshData> mesh_data = std::make_shared<MeshData>();
+    MeshData mesh_data{};
 
     std::unordered_map<MeshVertex, uint16_t> unique_vertices{};
 
@@ -233,11 +231,11 @@ std::shared_ptr<MeshData> loadMeshDataFromObjFile(
 
                 if (unique_vertices.count(vertex) == 0) {
                     unique_vertices[vertex] =
-                        static_cast<uint16_t>(mesh_data->vertices.size());
-                    mesh_data->vertices.push_back(vertex);
+                        static_cast<uint16_t>(mesh_data.vertices.size());
+                    mesh_data.vertices.push_back(vertex);
                     aabb.merge(vertex.position);
                 }
-                mesh_data->indices.push_back(unique_vertices[vertex]);
+                mesh_data.indices.push_back(unique_vertices[vertex]);
             }
         }
     }

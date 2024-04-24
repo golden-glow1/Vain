@@ -12,6 +12,7 @@
 #include "function/render/render_camera.h"
 #include "function/render/render_resource.h"
 #include "function/render/render_scene.h"
+#include "function/render/render_swap_context.h"
 
 namespace Vain {
 
@@ -24,7 +25,7 @@ enum class PipelineType { FORWARD, DEFERRED };
 
 class RenderSystem {
   public:
-    PipelineType pipeline_type = PipelineType::FORWARD;
+    PipelineType pipeline_type = PipelineType::DEFERRED;
 
     RenderSystem() = default;
     ~RenderSystem();
@@ -39,6 +40,8 @@ class RenderSystem {
     RenderCamera *getRenderCamera() { return m_render_camera.get(); }
 
   private:
+    RenderSwapContext m_swap_context{};
+
     std::unique_ptr<VulkanContext> m_ctx{};
     std::unique_ptr<RenderResource> m_render_resource{};
     std::unique_ptr<RenderCamera> m_render_camera{};
@@ -50,6 +53,8 @@ class RenderSystem {
     std::unique_ptr<ToneMappingPass> m_tone_mapping_pass{};
     std::unique_ptr<UIPass> m_ui_pass{};
     std::unique_ptr<CombineUIPass> m_combine_ui_pass{};
+
+    void processSwapData();
 
     void passUpdateAfterRecreateSwapchain();
 
