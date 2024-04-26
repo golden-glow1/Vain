@@ -1,5 +1,7 @@
 #include "render_system.h"
 
+#include <algorithm>
+
 #include "function/global/global_context.h"
 #include "function/render/window_system.h"
 #include "resource/asset_manager.h"
@@ -21,21 +23,21 @@ void RenderSystem::initialize(WindowSystem *window_system) {
         [this](int w, int h) { m_ctx->recreate_swapchain = true; }
     );
 
-    GlobalRenderDesc global_render_desc{};
+    SceneGlobalDesc scene_global_desc{};
     asset_manager->loadAsset(
-        config_manager->getGlobalRenderDescUrl().string(), global_render_desc
+        config_manager->getSceneGlobalDescUrl().generic_string(), scene_global_desc
     );
 
     IBLDesc ibl_desc{};
-    ibl_desc.brdf_map = global_render_desc.brdf_map;
-    ibl_desc.skybox_irradiance_map = global_render_desc.skybox_irradiance_map;
-    ibl_desc.skybox_specular_map = global_render_desc.skybox_specular_map;
+    ibl_desc.brdf_map = scene_global_desc.brdf_map;
+    ibl_desc.skybox_irradiance_map = scene_global_desc.skybox_irradiance_map;
+    ibl_desc.skybox_specular_map = scene_global_desc.skybox_specular_map;
 
     m_render_resource = std::make_unique<RenderResource>();
     m_render_resource->initialize(m_ctx.get());
     m_render_resource->uploadGlobalRenderResource(ibl_desc);
 
-    const CameraConfig &camera_config = global_render_desc.camera_config;
+    const CameraConfig &camera_config = scene_global_desc.camera_config;
     m_render_camera = std::make_unique<RenderCamera>();
     m_render_camera->lookAt(
         camera_config.pose.position, camera_config.pose.target, camera_config.pose.up
@@ -45,8 +47,8 @@ void RenderSystem::initialize(WindowSystem *window_system) {
     m_render_camera->aspect = camera_config.aspect.x / camera_config.aspect.y;
 
     m_render_scene = std::make_unique<RenderScene>();
-    m_render_scene->ambient_light = global_render_desc.ambient_light;
-    m_render_scene->directional_light = global_render_desc.directional_light;
+    m_render_scene->ambient_light = scene_global_desc.ambient_light;
+    m_render_scene->directional_light = scene_global_desc.directional_light;
 
     m_point_light_pass = std::make_unique<PointLightPass>();
     RenderPassInitInfo point_light_pass_info{m_ctx.get(), m_render_resource.get()};
@@ -125,7 +127,7 @@ void RenderSystem::tick(float delta_time) {
 }
 
 void RenderSystem::processSwapData() {
-    auto swap_data = m_swap_context.getRenderSwapData();
+    auto swap_data = swap_context.getRenderSwapData();
 
     AssetManager *asset_manager = g_runtime_global_context.asset_manager.get();
     assert(asset_manager);
@@ -176,14 +178,13 @@ void RenderSystem::processSwapData() {
                     };
                 }
                 bool is_material_loaded =
-                    m_render_scene->pbr_material_guid_allocator.hasAsset(material_desc);
+                    m_render_scene->material_guid_allocator.hasAsset(material_desc);
                 PBRMaterialData material_data{};
                 if (!is_material_loaded) {
                     material_data = loadPBRMaterial(material_desc);
                 }
                 render_entity.material_asset_id =
-                    m_render_scene->pbr_material_guid_allocator.allocateGuid(material_desc
-                    );
+                    m_render_scene->material_guid_allocator.allocateGuid(material_desc);
 
                 if (!is_mesh_loaded) {
                     m_render_resource->uploadMesh(render_entity, mesh_data);
@@ -201,6 +202,33 @@ void RenderSystem::processSwapData() {
                             entity = render_entity;
                         }
                     }
+                }
+            }
+
+            swap_data->dirty_game_objects->pop_front();
+        }
+
+        swap_data->dirty_game_objects.reset();
+    }
+
+    if (swap_data->dirty_game_objects.has_value()) {
+        while (!swap_data->dirty_game_objects->empty()) {
+            GameObjectDesc gobject = swap_data->dirty_game_objects->front();
+
+            for (size_t part_id = 0; part_id < gobject.object_parts.size(); ++part_id) {
+                GObjectPartID go_part_id = {gobject.go_id, part_id};
+                size_t guid;
+                if (!m_render_scene->entity_id_allocator.getGuid(go_part_id, guid)) {
+                    continue;
+                }
+
+                auto it = std::find_if(
+                    m_render_scene->render_entities.begin(),
+                    m_render_scene->render_entities.end(),
+                    [guid](const auto &entity) { return entity.entity_id == guid; }
+                );
+                if (it != m_render_scene->render_entities.end()) {
+                    m_render_scene->render_entities.erase(it);
                 }
             }
 

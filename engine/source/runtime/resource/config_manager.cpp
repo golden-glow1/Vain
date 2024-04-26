@@ -20,8 +20,8 @@ void ConfigManager::initialize(const std::filesystem::path &config_file_path) {
                 m_root_folder = config_file_path.parent_path() / value;
             } else if (name == "AssetFolder") {
                 m_asset_folder = m_root_folder / value;
-            } else if (name == "GlobalRenderDesc") {
-                m_global_render_desc_url = m_root_folder / value;
+            } else if (name == "SceneGlobalDesc") {
+                m_scene_global_desc_url = m_root_folder / value;
             }
         }
     }

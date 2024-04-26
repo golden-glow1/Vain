@@ -56,14 +56,14 @@ AutoReflectionRegister::AutoReflectionRegister() {
         .property("z_far", &Vain::CameraConfig::z_far)
         .property("z_near", &Vain::CameraConfig::z_near)
         .property("aspect", &Vain::CameraConfig::aspect);
-    registration::class_<Vain::GlobalRenderDesc>("GlobalRenderDesc")
-        .property("skybox_irradiance_map", &Vain::GlobalRenderDesc::skybox_irradiance_map)
-        .property("skybox_specular_map", &Vain::GlobalRenderDesc::skybox_specular_map)
-        .property("brdf_map", &Vain::GlobalRenderDesc::brdf_map)
-        .property("sky_color", &Vain::GlobalRenderDesc::sky_color)
-        .property("ambient_light", &Vain::GlobalRenderDesc::ambient_light)
-        .property("camera_config", &Vain::GlobalRenderDesc::camera_config)
-        .property("directional_light", &Vain::GlobalRenderDesc::directional_light);
+    registration::class_<Vain::SceneGlobalDesc>("SceneGlobalDesc")
+        .property("skybox_irradiance_map", &Vain::SceneGlobalDesc::skybox_irradiance_map)
+        .property("skybox_specular_map", &Vain::SceneGlobalDesc::skybox_specular_map)
+        .property("brdf_map", &Vain::SceneGlobalDesc::brdf_map)
+        .property("sky_color", &Vain::SceneGlobalDesc::sky_color)
+        .property("ambient_light", &Vain::SceneGlobalDesc::ambient_light)
+        .property("camera_config", &Vain::SceneGlobalDesc::camera_config)
+        .property("directional_light", &Vain::SceneGlobalDesc::directional_light);
 
     // math
     registration::class_<AxisAlignedBoundingBox>("AxisAlignedBoundingBox")

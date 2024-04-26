@@ -23,7 +23,7 @@ class RenderScene {
   public:
     AssetGuidAllocator<GObjectPartID> entity_id_allocator{};
     AssetGuidAllocator<MeshDesc> mesh_guid_allocator{};
-    AssetGuidAllocator<PBRMaterialDesc> pbr_material_guid_allocator{};
+    AssetGuidAllocator<PBRMaterialDesc> material_guid_allocator{};
     std::unordered_map<MeshDesc, AxisAlignedBoundingBox> aabb_cache{};
 
     Color ambient_light{};

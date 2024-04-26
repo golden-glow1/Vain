@@ -87,7 +87,7 @@ struct CameraConfig {
     glm::vec2 aspect{};
 };
 
-struct GlobalRenderDesc {
+struct SceneGlobalDesc {
     SkyBoxDesc skybox_irradiance_map{};
     SkyBoxDesc skybox_specular_map{};
     std::string brdf_map{};

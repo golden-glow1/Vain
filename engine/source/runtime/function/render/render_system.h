@@ -26,6 +26,7 @@ enum class PipelineType { FORWARD, DEFERRED };
 class RenderSystem {
   public:
     PipelineType pipeline_type = PipelineType::DEFERRED;
+    RenderSwapContext swap_context{};
 
     RenderSystem() = default;
     ~RenderSystem();
@@ -40,8 +41,6 @@ class RenderSystem {
     RenderCamera *getRenderCamera() { return m_render_camera.get(); }
 
   private:
-    RenderSwapContext m_swap_context{};
-
     std::unique_ptr<VulkanContext> m_ctx{};
     std::unique_ptr<RenderResource> m_render_resource{};
     std::unique_ptr<RenderCamera> m_render_camera{};
