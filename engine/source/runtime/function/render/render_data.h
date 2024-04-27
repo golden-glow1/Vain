@@ -41,7 +41,7 @@ struct TextureData {
 
 struct MeshData {
     std::vector<MeshVertex> vertices{};
-    std::vector<uint16_t> indices{};
+    std::vector<uint32_t> indices{};
 };
 
 struct PBRMaterialData {
@@ -61,6 +61,6 @@ std::shared_ptr<TextureData> loadTexture(const std::string &file, bool is_srgb =
 
 PBRMaterialData loadPBRMaterial(const PBRMaterialDesc &desc);
 
-MeshData loadMeshDataFromObjFile(const std::string &file, AxisAlignedBoundingBox &aabb);
+MeshData loadMeshData(const std::string &file, AxisAlignedBoundingBox &aabb);
 
 }  // namespace Vain

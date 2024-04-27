@@ -27,7 +27,7 @@ target_link_libraries(
 target_link_libraries(
     ${TARGET_NAME} PRIVATE
     stb
-    tinyobjloader
+    assimp
 )
 
 add_dependencies(${TARGET_NAME} ${SHADER_COMPILE_TARGET})

@@ -137,7 +137,7 @@ void PointLightPass::draw(const RenderScene &scene) {
                     command_buffer, 0, 1, &mesh->vertex_buffer, &offset
                 );
                 m_ctx->cmdBindIndexBuffer(
-                    command_buffer, mesh->index_buffer, 0, VK_INDEX_TYPE_UINT16
+                    command_buffer, mesh->index_buffer, 0, VK_INDEX_TYPE_UINT32
                 );
 
                 uint32_t per_drawcall_max_instance =

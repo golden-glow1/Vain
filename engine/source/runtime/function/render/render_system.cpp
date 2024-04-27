@@ -157,7 +157,7 @@ void RenderSystem::processSwapData() {
             MeshData mesh_data{};
             if (!is_mesh_loaded) {
                 mesh_data =
-                    loadMeshDataFromObjFile(mesh_desc.mesh_file, render_entity.aabb);
+                    loadMeshData(mesh_desc.mesh_file, render_entity.aabb);
             } else {
                 render_entity.aabb = m_render_scene->aabb_cache[mesh_desc];
             }
@@ -167,12 +167,12 @@ void RenderSystem::processSwapData() {
             PBRMaterialDesc material_desc{};
             if (gobject.material_desc.with_texture) {
                 material_desc = {
-                    material_desc.base_color_file,
-                    material_desc.normal_file,
-                    material_desc.metallic_file,
-                    material_desc.roughness_file,
-                    material_desc.occlusion_file,
-                    material_desc.emissive_file
+                    gobject.material_desc.base_color_texture_file,
+                    gobject.material_desc.normal_texture_file,
+                    gobject.material_desc.metallic_texture_file,
+                    gobject.material_desc.roughness_texture_file,
+                    gobject.material_desc.occlusion_texture_file,
+                    gobject.material_desc.emissive_texture_file
                 };
             }
             bool is_material_loaded =

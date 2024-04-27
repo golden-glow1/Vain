@@ -178,7 +178,7 @@ void RenderResource::uploadMesh(const RenderEntity &entity, const MeshData &data
     uploadVertexBuffer(
         mesh, data.vertices.data(), mesh.vertex_count * sizeof(MeshVertex)
     );
-    uploadIndexBuffer(mesh, data.indices.data(), mesh.index_count * sizeof(uint16_t));
+    uploadIndexBuffer(mesh, data.indices.data(), mesh.index_count * sizeof(uint32_t));
 }
 
 void RenderResource::uploadPBRMaterial(

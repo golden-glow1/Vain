@@ -90,9 +90,8 @@ AutoReflectionRegister::AutoReflectionRegister() {
         .property(
             "occlusion_texture_file", &GameObjectMaterialDesc::occlusion_texture_file
         )
-        .property(
-            "emissive_texture_file", &GameObjectMaterialDesc::emissive_texture_file
-        );
+        .property("emissive_texture_file", &GameObjectMaterialDesc::emissive_texture_file)
+        .property("with_texture", &GameObjectMaterialDesc::with_texture);
     registration::class_<GameObjectDesc>("GameObjectDesc")
         .property("mesh_desc", &GameObjectDesc::mesh_desc)
         .property("material_desc", &GameObjectDesc::material_desc)
