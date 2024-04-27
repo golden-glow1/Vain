@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
     engine->startEngine(config_file_path);
     editor->initialize(engine);
 
-    engine->run();
+    editor->run();
 
     editor->clear();
     engine->shutdownEngine();

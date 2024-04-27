@@ -165,7 +165,7 @@ void RenderResource::uploadEntity(
 void RenderResource::uploadMesh(const RenderEntity &entity, const MeshData &data) {
     size_t asset_id = entity.mesh_asset_id;
 
-    if (!m_mesh_map.count(asset_id)) {
+    if (m_mesh_map.count(asset_id)) {
         return;
     }
 
@@ -185,7 +185,7 @@ void RenderResource::uploadPBRMaterial(
     const RenderEntity &entity, const PBRMaterialData &data
 ) {
     size_t asset_id = entity.material_asset_id;
-    if (!m_material_map.count(asset_id)) {
+    if (m_material_map.count(asset_id)) {
         return;
     }
 
@@ -332,6 +332,18 @@ void RenderResource::uploadPBRMaterial(
         material.emissive_texture_image,
         material.emissive_image_view,
         material.emissive_image_allocation
+    );
+
+    VkDescriptorSetAllocateInfo material_descriptor_set_alloc_info{};
+    material_descriptor_set_alloc_info.sType =
+        VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    material_descriptor_set_alloc_info.descriptorPool = m_ctx->descriptor_pool;
+    material_descriptor_set_alloc_info.descriptorSetCount = 1;
+    material_descriptor_set_alloc_info.pSetLayouts = &material_descriptor_set_layout;
+    vkAllocateDescriptorSets(
+        m_ctx->device,
+        &material_descriptor_set_alloc_info,
+        &material.material_descriptor_set
     );
 
     VkDescriptorBufferInfo material_uniform_buffer_info = {};

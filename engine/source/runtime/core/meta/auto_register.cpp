@@ -5,6 +5,7 @@
 
 #include "core/math/aabb.h"
 #include "core/math/transform.h"
+#include "function/framework/world_manager.h"
 #include "function/render/render_object.h"
 #include "resource/asset_type.h"
 
@@ -92,10 +93,10 @@ AutoReflectionRegister::AutoReflectionRegister() {
         .property(
             "emissive_texture_file", &GameObjectMaterialDesc::emissive_texture_file
         );
-    registration::class_<GameObjectPartDesc>("GameObjectPartDesc")
-        .property("mesh_desc", &GameObjectPartDesc::mesh_desc)
-        .property("material_desc", &GameObjectPartDesc::material_desc)
-        .property("transform", &GameObjectPartDesc::transform);
+    registration::class_<GameObjectDesc>("GameObjectDesc")
+        .property("mesh_desc", &GameObjectDesc::mesh_desc)
+        .property("material_desc", &GameObjectDesc::material_desc)
+        .property("transform", &GameObjectDesc::transform);
 }
 
 }  // namespace Vain

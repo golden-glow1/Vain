@@ -1,5 +1,7 @@
 #include "editor_ui.h"
 
+#include <core/base/macro.h>
+#include <function/framework/world_manager.h>
 #include <function/global/global_context.h>
 #include <function/render/render_system.h>
 #include <function/render/window_system.h>
@@ -327,13 +329,24 @@ void EditorUI::buildEditorFileAssetsUITree(EditorFileNode *node) {
             ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen |
                 ImGuiTreeNodeFlags_SpanFullWidth
         );
+
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-            // onFileContentItemClicked(node);
+            onFileContentItemClicked(node);
         }
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(100.0f);
         ImGui::TextUnformatted(node->file_type.c_str());
     }
+}
+
+void EditorUI::onFileContentItemClicked(EditorFileNode *node) {
+    if (node->file_type != "object") {
+        return;
+    }
+
+    VAIN_INFO("Loading object: {}", node->file_path);
+
+    g_editor_global_context.world_manager->addObject(node->file_path);
 }
 
 }  // namespace Vain

@@ -16,8 +16,10 @@ class VainEditor {
     void initialize(VainEngine *engine);
     void clear();
 
+    void run();
+
   private:
-    VainEngine *m_engine{};
+    VainEngine *m_engine_runtime{};
     std::unique_ptr<EditorUI> m_editor_ui;
 };
 

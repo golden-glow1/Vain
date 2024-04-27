@@ -13,15 +13,15 @@ class VainEngine {
     void run();
     void tickOneFrame(float delta_time);
 
-  protected:
-    std::chrono::steady_clock::time_point m_last_tick_time_point{
-        std::chrono::steady_clock::now()
-    };
-
     /**
      *  Each frame can only be called once
      */
     float calculateDeltaTime();
+
+  protected:
+    std::chrono::steady_clock::time_point m_last_tick_time_point{
+        std::chrono::steady_clock::now()
+    };
 };
 
 }  // namespace Vain

@@ -2,6 +2,7 @@
 
 #include "core/log/log_system.h"
 #include "core/meta/auto_register.h"
+#include "function/framework/world_manager.h"
 #include "function/render/render_system.h"
 #include "function/render/window_system.h"
 #include "resource/asset_manager.h"
@@ -27,9 +28,13 @@ void RuntimeGlobalContext::startSystems(const std::filesystem::path &config_file
 
     render_system = std::make_unique<RenderSystem>();
     render_system->initialize(window_system.get());
+
+    world_manager = std::make_unique<WorldManager>();
+    world_manager->initialize();
 }
 
 void RuntimeGlobalContext::shutdownSystems() {
+    world_manager.reset();
     render_system.reset();
     window_system.reset();
     m_auto_reflection_register.reset();

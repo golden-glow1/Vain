@@ -22,41 +22,11 @@ struct GameObjectMaterialDesc {
     bool with_texture{false};
 };
 
-struct GameObjectPartDesc {
+struct GameObjectDesc {
+    GObjectID go_id{k_invalid_go_id};
     GameObjectMeshDesc mesh_desc{};
     GameObjectMaterialDesc material_desc{};
     Transform transform{};
 };
 
-constexpr size_t k_invalid_part_id = std::numeric_limits<size_t>::max();
-
-struct GObjectPartID {
-    GObjectID go_id{k_invalid_go_id};
-    size_t part_id{k_invalid_part_id};
-
-    operator bool() const {
-        return go_id != k_invalid_go_id && part_id != k_invalid_part_id;
-    }
-};
-
-class GameObjectDesc {
-  public:
-    GameObjectDesc(GObjectID go_id, const std::vector<GameObjectPartDesc> &object_parts)
-        : go_id(go_id), object_parts(object_parts) {}
-
-    GObjectID go_id{k_invalid_go_id};
-    std::vector<GameObjectPartDesc> object_parts{};
-};
-
 }  // namespace Vain
-
-namespace std {
-
-template <>
-struct hash<Vain::GObjectPartID> {
-    size_t operator()(const Vain::GObjectPartID &id) const {
-        return id.go_id ^ (id.part_id << 1);
-    }
-};
-
-}  // namespace std

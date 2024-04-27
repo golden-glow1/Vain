@@ -1983,6 +1983,21 @@ void MainPass::drawMeshGbuffer(const RenderScene &scene) {
         pipelines[_pipeline_type_mesh_gbuffer]
     );
 
+    VkViewport viewport = {
+        0.0,
+        0.0,
+        static_cast<float>(m_ctx->swapchain_extent.width),
+        static_cast<float>(m_ctx->swapchain_extent.height),
+        0.0,
+        1.0
+    };
+    VkRect2D scissor = {
+        0, 0, m_ctx->swapchain_extent.width, m_ctx->swapchain_extent.height
+    };
+
+    m_ctx->cmdSetViewport(command_buffer, 0, 1, &viewport);
+    m_ctx->cmdSetScissor(command_buffer, 0, 1, &scissor);
+
     uint32_t per_frame_dynamic_offset = ROUND_UP(
         m_res->global_render_resource.storage_buffer
             .global_upload_ringbuffers_end[m_ctx->currentFrameIndex()],

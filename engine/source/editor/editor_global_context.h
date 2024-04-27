@@ -5,14 +5,15 @@
 namespace Vain {
 
 class EditorInputManager;
-class EditorSceneManager;
 class RenderSystem;
 class VainEngine;
 class WindowSystem;
+class WorldManager;
 
 struct EditorGlobalContextInitInfo {
     RenderSystem *render_system;
     WindowSystem *window_system;
+    WorldManager *world_manager;
     VainEngine *engine_runtime;
 };
 
@@ -20,10 +21,10 @@ class EditorGlobalContext {
   public:
     RenderSystem *render_system{};
     WindowSystem *window_system{};
+    WorldManager *world_manager{};
     VainEngine *engine_runtime{};
 
     std::unique_ptr<EditorInputManager> input_manager{};
-    std::unique_ptr<EditorSceneManager> scene_manager{};
 
     EditorGlobalContext() = default;
     ~EditorGlobalContext();

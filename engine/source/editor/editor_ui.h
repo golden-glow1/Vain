@@ -35,6 +35,7 @@ class EditorUI : public WindowUI {
     void showEditorFileContentWindow(bool *p_open);
 
     void buildEditorFileAssetsUITree(EditorFileNode *node);
+    void onFileContentItemClicked(EditorFileNode *node);
 };
 
 }  // namespace Vain

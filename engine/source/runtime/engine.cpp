@@ -19,7 +19,6 @@ void VainEngine::shutdownEngine() {
 
 void VainEngine::run() {
     while (!g_runtime_global_context.window_system->shouldClose()) {
-        g_runtime_global_context.window_system->pollEvents();
         const float delta_time = calculateDeltaTime();
 
         tickOneFrame(delta_time);
@@ -27,7 +26,9 @@ void VainEngine::run() {
 }
 
 void VainEngine::tickOneFrame(float delta_time) {
-    g_runtime_global_context.render_system->tick(delta_time);
+    g_runtime_global_context.window_system->pollEvents();
+
+    g_runtime_global_context.render_system->swap_context.swapData();
 
     g_runtime_global_context.render_system->tick(delta_time);
 }

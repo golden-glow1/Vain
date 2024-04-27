@@ -93,6 +93,7 @@ struct PBRMaterialResource {
 class RenderResource {
   public:
     GlobalRenderResource global_render_resource{};
+    VkDescriptorSetLayout material_descriptor_set_layout{};
 
     MeshPerFrameStorageBufferObject mesh_per_frame_storage_buffer_object{};
     PointLightShadowPerFrameStorageBufferObject

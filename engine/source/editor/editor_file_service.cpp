@@ -9,16 +9,13 @@ namespace Vain {
 
 void EditorFileService::buildEngineFileTree() {
     auto asset_folder = g_runtime_global_context.config_manager->getAssetFolder();
+    auto root_folder = g_runtime_global_context.config_manager->getRootFolder();
     std::string asset_folder_name;
     if (asset_folder.has_filename()) {
         asset_folder_name = asset_folder.filename().generic_string();
     } else {
         asset_folder_name = asset_folder.parent_path().filename().generic_string();
     }
-    std::string asset_relative_path =
-        asset_folder
-            .lexically_relative(g_runtime_global_context.config_manager->getRootFolder())
-            .generic_string();
 
     std::vector<std::filesystem::path> file_paths{};
     auto iter = std::filesystem::recursive_directory_iterator{asset_folder};
@@ -40,9 +37,8 @@ void EditorFileService::buildEngineFileTree() {
     std::vector<std::shared_ptr<EditorFileNode>> node_array;
 
     m_file_node_array.clear();
-    auto root_node = std::make_shared<EditorFileNode>(
-        asset_folder_name, "Folder", asset_relative_path, -1
-    );
+    auto root_node =
+        std::make_shared<EditorFileNode>(asset_folder_name, "Folder", "", -1);
     m_file_node_array.push_back(root_node);
 
     int all_file_segments_count = all_file_segments.size();
@@ -64,8 +60,13 @@ void EditorFileService::buildEngineFileTree() {
                 if (type.length() == 0) {
                     continue;
                 }
+                if (type == ".json") {
+                    type = file_paths[file_index].stem().extension().generic_string();
+                }
                 file_node->file_type = type.substr(1);
-                file_node->file_path = file_paths[file_index].generic_string();
+                file_node->file_path = file_paths[file_index]
+                                           .lexically_relative(root_folder)
+                                           .generic_string();
             }
 
             node_array.push_back(file_node);

@@ -15,7 +15,7 @@ void EditorInputManager::initialize() { registerInput(); }
 
 void EditorInputManager::clear() {}
 
-void EditorInputManager::tick(float delta_time) { processEditorCommand(); }
+void EditorInputManager::tick(float delta_time) { processEditorCommand(delta_time); }
 
 void EditorInputManager::registerInput() {
     g_editor_global_context.window_system->registerOnKeyFunc(
@@ -95,7 +95,8 @@ void EditorInputManager::onKey(int key, int scancode, int action, int mods) {
 }
 
 void EditorInputManager::onCursorPos(double xpos, double ypos) {
-    float dimension = std::max(m_engine_window_size.x, m_engine_window_size.y);
+    auto window_size = g_editor_global_context.window_system->getWindowSize();
+    float dimension = std::max(window_size[0], window_size[1]);
     float angular_velocity = 180.0 / dimension;
     auto window_system = g_editor_global_context.window_system;
 
@@ -120,10 +121,22 @@ void EditorInputManager::onCursorEnter(int entered) {
     }
 }
 
-void EditorInputManager::onScroll(double xoffset, double yoffset) {}
+void EditorInputManager::onScroll(double xoffset, double yoffset) {
+    auto window_system = g_editor_global_context.window_system;
+    auto render_system = g_editor_global_context.render_system;
+    if (window_system->isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT)) {
+        if (yoffset > 0) {
+            m_camera_speed *= 1.2f;
+        } else {
+            m_camera_speed *= 0.8f;
+        }
+    } else {
+        render_system->getRenderCamera()->zoom(yoffset * 2.0);
+    }
+}
 
-void EditorInputManager::processEditorCommand() {
-    float camera_speed = m_camera_speed;
+void EditorInputManager::processEditorCommand(float delta_time) {
+    float camera_speed = m_camera_speed * delta_time;
     auto camera = g_editor_global_context.render_system->getRenderCamera();
     glm::vec3 delta{0.0};
 

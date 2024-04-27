@@ -55,7 +55,7 @@ glm::mat4 RenderCamera::view() const {
 }
 
 glm::mat4 RenderCamera::projection() const {
-    glm::mat4 proj = glm::perspective(fovy, aspect, znear, zfar);
+    glm::mat4 proj = glm::perspective(glm::radians(fovy), aspect, znear, zfar);
     proj[1][1] *= -1;
     return proj;
 }
