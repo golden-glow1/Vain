@@ -57,6 +57,8 @@ struct MeshResource {
     uint32_t index_count{};
     VkBuffer index_buffer{};
     VmaAllocation index_buffer_allocation{};
+
+    AxisAlignedBoundingBox aabb{};
 };
 
 struct PBRMaterialResource {

@@ -11,7 +11,6 @@ class WindowSystem;
 class ConfigManager;
 class AssetManager;
 class AutoReflectionRegister;
-class WorldManager;
 
 class RuntimeGlobalContext {
   public:
@@ -23,7 +22,6 @@ class RuntimeGlobalContext {
     std::unique_ptr<AssetManager> asset_manager{};
     std::unique_ptr<WindowSystem> window_system{};
     std::unique_ptr<RenderSystem> render_system{};
-    std::unique_ptr<WorldManager> world_manager{};
 
   private:
     std::unique_ptr<AutoReflectionRegister> m_auto_reflection_register{};

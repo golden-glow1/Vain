@@ -4,10 +4,8 @@
 
 namespace Vain {
 
-// combine mesh and PBR material together
 class RenderEntity {
   public:
-    size_t entity_id{0};
     glm::mat4 model_matrix{1.0};
 
     // mesh

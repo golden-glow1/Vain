@@ -29,10 +29,12 @@ class EditorUI : public WindowUI {
     std::chrono::time_point<std::chrono::steady_clock> m_last_file_tree_update{};
 
     bool m_file_content_window_open = true;
+    bool m_object_detail_window = true;
 
     std::string getLeafUINodeParentLabel();
 
     void showEditorFileContentWindow(bool *p_open);
+    void showObjectDetailWindow(bool *p_open);
 
     void buildEditorFileAssetsUITree(EditorFileNode *node);
     void onFileContentItemClicked(EditorFileNode *node);

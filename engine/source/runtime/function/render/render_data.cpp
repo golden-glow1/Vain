@@ -2,7 +2,6 @@
 
 #include <assert.h>
 
-#include <assimp/Importer.hpp>
 #include <unordered_map>
 
 #include "core/base/macro.h"
@@ -109,21 +108,14 @@ std::shared_ptr<TextureData> loadTexture(const std::string &file, bool is_srgb) 
 PBRMaterialData loadPBRMaterial(const PBRMaterialDesc &desc) {
     PBRMaterialData data{};
 
-    data.base_color_texture = loadTexture(desc.base_color_file);
+    // https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html
+    data.base_color_texture = loadTexture(desc.base_color_file, true);
+    data.metallic_roughness_texture = loadTexture(desc.metallic_roughness_file);
     data.normal_texture = loadTexture(desc.normal_file);
-    data.metallic_texture = loadTexture(desc.metallic_file);
-    data.roughness_texture = loadTexture(desc.roughness_file);
     data.occlusion_texture = loadTexture(desc.occlusion_file);
-    data.emissive_texture = loadTexture(desc.emissive_file);
+    data.emissive_texture = loadTexture(desc.emissive_file, true);
 
     return data;
-}
-
-MeshData loadMeshData(const std::string &file, AxisAlignedBoundingBox &aabb) {
-    AssetManager *asset_manager = g_runtime_global_context.asset_manager.get();
-    MeshData mesh_data{};
-
-    return mesh_data;
 }
 
 }  // namespace Vain

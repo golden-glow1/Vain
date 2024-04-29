@@ -762,7 +762,7 @@ void MainPass::createDescriptorSetLayouts() {
     }
 
     {
-        VkDescriptorSetLayoutBinding mesh_material_layout_bindings[7]{};
+        VkDescriptorSetLayoutBinding mesh_material_layout_bindings[6]{};
 
         // (set = 1, binding = 0 in fragment shader)
         VkDescriptorSetLayoutBinding &mesh_material_layout_uniform_buffer_binding =
@@ -787,39 +787,33 @@ void MainPass::createDescriptorSetLayouts() {
         mesh_material_layout_base_color_texture_binding.pImmutableSamplers = nullptr;
 
         // (set = 1, binding = 2 in fragment shader)
-        VkDescriptorSetLayoutBinding &mesh_material_layout_normal_texture_binding =
-            mesh_material_layout_bindings[2];
-        mesh_material_layout_normal_texture_binding =
+        VkDescriptorSetLayoutBinding
+            &mesh_material_layout_matallic_roughness_texture_binding =
+                mesh_material_layout_bindings[2];
+        mesh_material_layout_matallic_roughness_texture_binding =
             mesh_material_layout_base_color_texture_binding;
-        mesh_material_layout_normal_texture_binding.binding = 2;
+        mesh_material_layout_matallic_roughness_texture_binding.binding = 2;
 
         // (set = 1, binding = 3 in fragment shader)
-        VkDescriptorSetLayoutBinding &mesh_material_layout_metallic_texture_binding =
+        VkDescriptorSetLayoutBinding &mesh_material_layout_normal_texture_binding =
             mesh_material_layout_bindings[3];
-        mesh_material_layout_metallic_texture_binding =
+        mesh_material_layout_normal_texture_binding =
             mesh_material_layout_base_color_texture_binding;
-        mesh_material_layout_metallic_texture_binding.binding = 3;
+        mesh_material_layout_normal_texture_binding.binding = 3;
 
         // (set = 1, binding = 4 in fragment shader)
-        VkDescriptorSetLayoutBinding &mesh_material_layout_roughness_texture_binding =
-            mesh_material_layout_bindings[4];
-        mesh_material_layout_roughness_texture_binding =
-            mesh_material_layout_base_color_texture_binding;
-        mesh_material_layout_roughness_texture_binding.binding = 4;
-
-        // (set = 1, binding = 5 in fragment shader)
         VkDescriptorSetLayoutBinding &mesh_material_layout_occlusion_texture_binding =
-            mesh_material_layout_bindings[5];
+            mesh_material_layout_bindings[4];
         mesh_material_layout_occlusion_texture_binding =
             mesh_material_layout_base_color_texture_binding;
-        mesh_material_layout_occlusion_texture_binding.binding = 5;
+        mesh_material_layout_occlusion_texture_binding.binding = 4;
 
-        // (set = 1, binding = 6 in fragment shader)
+        // (set = 1, binding = 5 in fragment shader)
         VkDescriptorSetLayoutBinding &mesh_material_layout_emissive_texture_binding =
-            mesh_material_layout_bindings[6];
+            mesh_material_layout_bindings[5];
         mesh_material_layout_emissive_texture_binding =
             mesh_material_layout_base_color_texture_binding;
-        mesh_material_layout_emissive_texture_binding.binding = 6;
+        mesh_material_layout_emissive_texture_binding.binding = 5;
 
         VkDescriptorSetLayoutCreateInfo mesh_material_layout_create_info{};
         mesh_material_layout_create_info.sType =

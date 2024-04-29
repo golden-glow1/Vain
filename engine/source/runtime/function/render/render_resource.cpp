@@ -174,6 +174,7 @@ void RenderResource::uploadMesh(const RenderEntity &entity, const MeshData &data
 
     mesh.index_count = data.indices.size();
     mesh.vertex_count = data.vertices.size();
+    mesh.aabb = data.aabb;
 
     uploadVertexBuffer(
         mesh, data.vertices.data(), mesh.vertex_count * sizeof(MeshVertex)
@@ -205,6 +206,17 @@ void RenderResource::uploadPBRMaterial(
         base_color_image_format = data.base_color_texture->format;
     }
 
+    void *metallic_roughness_image_pixels = empty_image;
+    uint32_t metallic_roughness_image_width = 1;
+    uint32_t metallic_roughness_image_height = 1;
+    VkFormat metallic_roughness_image_format = VK_FORMAT_R8G8B8A8_UNORM;
+    if (data.metallic_roughness_texture) {
+        metallic_roughness_image_pixels = data.metallic_roughness_texture->pixels;
+        metallic_roughness_image_width = data.metallic_roughness_texture->width;
+        metallic_roughness_image_height = data.metallic_roughness_texture->height;
+        metallic_roughness_image_format = data.metallic_roughness_texture->format;
+    }
+
     void *normal_image_pixels = empty_image;
     uint32_t normal_image_width = 1;
     uint32_t normal_image_height = 1;
@@ -214,28 +226,6 @@ void RenderResource::uploadPBRMaterial(
         normal_image_width = data.normal_texture->width;
         normal_image_height = data.normal_texture->height;
         normal_image_format = data.normal_texture->format;
-    }
-
-    void *metallic_image_pixels = empty_image;
-    uint32_t metallic_image_width = 1;
-    uint32_t metallic_image_height = 1;
-    VkFormat metallic_image_format = VK_FORMAT_R8G8B8A8_UNORM;
-    if (data.metallic_texture) {
-        metallic_image_pixels = data.metallic_texture->pixels;
-        metallic_image_width = data.metallic_texture->width;
-        metallic_image_height = data.metallic_texture->height;
-        metallic_image_format = data.metallic_texture->format;
-    }
-
-    void *roughness_image_pixels = empty_image;
-    uint32_t roughness_image_width = 1;
-    uint32_t roughness_image_height = 1;
-    VkFormat roughness_image_format = VK_FORMAT_R8G8B8A8_UNORM;
-    if (data.roughness_texture) {
-        roughness_image_pixels = data.roughness_texture->pixels;
-        roughness_image_width = data.roughness_texture->width;
-        roughness_image_height = data.roughness_texture->height;
-        roughness_image_format = data.roughness_texture->format;
     }
 
     void *occlusion_image_pixels = empty_image;
@@ -252,7 +242,7 @@ void RenderResource::uploadPBRMaterial(
     void *emissive_image_pixels = empty_image;
     uint32_t emissive_image_width = 1;
     uint32_t emissive_image_height = 1;
-    VkFormat emissive_image_format = VK_FORMAT_R8G8B8A8_UNORM;
+    VkFormat emissive_image_format = VK_FORMAT_R8G8B8A8_SRGB;
     if (data.emissive_texture) {
         emissive_image_pixels = data.emissive_texture->pixels;
         emissive_image_width = data.emissive_texture->width;
@@ -288,26 +278,14 @@ void RenderResource::uploadPBRMaterial(
 
     createTexture(
         m_ctx,
-        metallic_image_width,
-        metallic_image_height,
-        metallic_image_pixels,
-        metallic_image_format,
+        metallic_roughness_image_width,
+        metallic_roughness_image_height,
+        metallic_roughness_image_pixels,
+        metallic_roughness_image_format,
         0,
         material.metallic_texture_image,
         material.metallic_image_view,
         material.metallic_image_allocation
-    );
-
-    createTexture(
-        m_ctx,
-        roughness_image_width,
-        roughness_image_height,
-        roughness_image_pixels,
-        roughness_image_format,
-        0,
-        material.roughness_texture_image,
-        material.roughness_image_view,
-        material.roughness_image_allocation
     );
 
     createTexture(
@@ -357,23 +335,18 @@ void RenderResource::uploadPBRMaterial(
     base_color_image_info.sampler =
         m_ctx->getOrCreateMipmapSampler(base_color_image_width, base_color_image_height);
 
+    VkDescriptorImageInfo metallic_roughness_image_info{};
+    metallic_roughness_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    metallic_roughness_image_info.imageView = material.metallic_image_view;
+    metallic_roughness_image_info.sampler = m_ctx->getOrCreateMipmapSampler(
+        metallic_roughness_image_width, metallic_roughness_image_height
+    );
+
     VkDescriptorImageInfo normal_image_info{};
     normal_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     normal_image_info.imageView = material.normal_image_view;
     normal_image_info.sampler =
         m_ctx->getOrCreateMipmapSampler(normal_image_width, normal_image_height);
-
-    VkDescriptorImageInfo metallic_image_info{};
-    metallic_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    metallic_image_info.imageView = material.metallic_image_view;
-    metallic_image_info.sampler =
-        m_ctx->getOrCreateMipmapSampler(metallic_image_width, metallic_image_height);
-
-    VkDescriptorImageInfo roughness_image_info{};
-    roughness_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    roughness_image_info.imageView = material.roughness_image_view;
-    roughness_image_info.sampler =
-        m_ctx->getOrCreateMipmapSampler(roughness_image_width, roughness_image_height);
 
     VkDescriptorImageInfo occlusion_image_info{};
     occlusion_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -387,7 +360,7 @@ void RenderResource::uploadPBRMaterial(
     emissive_image_info.sampler =
         m_ctx->getOrCreateMipmapSampler(emissive_image_width, emissive_image_height);
 
-    VkWriteDescriptorSet material_descriptor_writes[7]{};
+    VkWriteDescriptorSet material_descriptor_writes[6]{};
 
     material_descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     material_descriptor_writes[0].dstSet = material.material_descriptor_set;
@@ -408,23 +381,19 @@ void RenderResource::uploadPBRMaterial(
 
     material_descriptor_writes[2] = material_descriptor_writes[1];
     material_descriptor_writes[2].dstBinding = 2;
-    material_descriptor_writes[2].pImageInfo = &normal_image_info;
+    material_descriptor_writes[2].pImageInfo = &metallic_roughness_image_info;
 
     material_descriptor_writes[3] = material_descriptor_writes[1];
     material_descriptor_writes[3].dstBinding = 3;
-    material_descriptor_writes[3].pImageInfo = &metallic_image_info;
+    material_descriptor_writes[3].pImageInfo = &normal_image_info;
 
     material_descriptor_writes[4] = material_descriptor_writes[1];
     material_descriptor_writes[4].dstBinding = 4;
-    material_descriptor_writes[4].pImageInfo = &roughness_image_info;
+    material_descriptor_writes[4].pImageInfo = &occlusion_image_info;
 
     material_descriptor_writes[5] = material_descriptor_writes[1];
     material_descriptor_writes[5].dstBinding = 5;
-    material_descriptor_writes[5].pImageInfo = &occlusion_image_info;
-
-    material_descriptor_writes[6] = material_descriptor_writes[1];
-    material_descriptor_writes[6].dstBinding = 6;
-    material_descriptor_writes[6].pImageInfo = &emissive_image_info;
+    material_descriptor_writes[5].pImageInfo = &emissive_image_info;
 
     vkUpdateDescriptorSets(
         m_ctx->device,

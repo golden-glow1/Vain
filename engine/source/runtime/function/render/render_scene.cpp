@@ -16,10 +16,7 @@ void RenderScene::updateVisibleNodes(RenderResource &resource, RenderCamera &cam
     updateVisibleNodesMainCamera(resource, camera);
 }
 
-void RenderScene::clearForReloading() {
-    render_entities.clear();
-    entity_id_allocator.clear();
-}
+void RenderScene::clearForReloading() { render_entities.clear(); }
 
 void RenderScene::updateVisibleNodesDirectionalLight(
     RenderResource &resource, RenderCamera &camera
@@ -35,18 +32,17 @@ void RenderScene::updateVisibleNodesDirectionalLight(
     Frustum frustum{light_proj_view, -1.0, 1.0, -1.0, 1.0, 0.0, 1.0};
 
     for (const auto &entity : render_entities) {
-        if (!frustum.intersect(boundingBoxTransform(entity.aabb, entity.model_matrix))) {
+        if (!frustum.intersect(boundingBoxTransform(entity->aabb, entity->model_matrix))) {
             continue;
         }
 
         directional_light_visible_mesh_nodes.emplace_back();
-        RenderMeshNode &node = directional_light_visible_mesh_nodes.back();
+        RenderNode &node = directional_light_visible_mesh_nodes.back();
 
-        node.model_matrix = entity.model_matrix;
-        node.entity_id = entity.entity_id;
+        node.model_matrix = entity->model_matrix;
 
-        node.ref_mesh = resource.getEntityMesh(entity);
-        node.ref_material = resource.getEntityMaterial(entity);
+        node.ref_mesh = resource.getEntityMesh(*entity);
+        node.ref_material = resource.getEntityMaterial(*entity);
     }
 }
 
@@ -58,7 +54,7 @@ void RenderScene::updateVisibleNodesPointLights(
     for (const auto &entity : render_entities) {
         bool intersect = false;
         for (const auto &point_light : point_lights) {
-            intersect = boundingBoxTransform(entity.aabb, entity.model_matrix)
+            intersect = boundingBoxTransform(entity->aabb, entity->model_matrix)
                             .intersect(point_light.position, point_light.getRadius());
             if (intersect) {
                 break;
@@ -70,13 +66,12 @@ void RenderScene::updateVisibleNodesPointLights(
         }
 
         point_lights_visible_mesh_nodes.emplace_back();
-        RenderMeshNode &node = point_lights_visible_mesh_nodes.back();
+        RenderNode &node = point_lights_visible_mesh_nodes.back();
 
-        node.model_matrix = entity.model_matrix;
-        node.entity_id = entity.entity_id;
+        node.model_matrix = entity->model_matrix;
 
-        node.ref_mesh = resource.getEntityMesh(entity);
-        node.ref_material = resource.getEntityMaterial(entity);
+        node.ref_mesh = resource.getEntityMesh(*entity);
+        node.ref_material = resource.getEntityMaterial(*entity);
     }
 }
 
@@ -89,18 +84,17 @@ void RenderScene::updateVisibleNodesMainCamera(
     Frustum frustum{proj_view_matrix, -1.0, 1.0, -1.0, 1.0, 0.0, 1.0};
 
     for (const auto &entity : render_entities) {
-        if (!frustum.intersect(boundingBoxTransform(entity.aabb, entity.model_matrix))) {
+        if (!frustum.intersect(boundingBoxTransform(entity->aabb, entity->model_matrix))) {
             continue;
         }
 
         main_camera_visible_mesh_nodes.emplace_back();
-        RenderMeshNode &node = main_camera_visible_mesh_nodes.back();
+        RenderNode &node = main_camera_visible_mesh_nodes.back();
 
-        node.model_matrix = entity.model_matrix;
-        node.entity_id = entity.entity_id;
+        node.model_matrix = entity->model_matrix;
 
-        node.ref_mesh = resource.getEntityMesh(entity);
-        node.ref_material = resource.getEntityMaterial(entity);
+        node.ref_mesh = resource.getEntityMesh(*entity);
+        node.ref_material = resource.getEntityMaterial(*entity);
     }
 }
 
@@ -136,7 +130,7 @@ glm::mat4 calculateDirectionalLightView(
 
     AxisAlignedBoundingBox scene_bounding_box;
     for (const auto &entity : scene.render_entities) {
-        auto mesh_bounding_box = boundingBoxTransform(entity.aabb, entity.model_matrix);
+        auto mesh_bounding_box = boundingBoxTransform(entity->aabb, entity->model_matrix);
         scene_bounding_box.merge(mesh_bounding_box);
     }
 

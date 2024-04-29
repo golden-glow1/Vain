@@ -51,11 +51,10 @@ layout(set = 1, binding = 0) uniform _per_material {
 };
 
 layout(set = 1, binding = 1) uniform sampler2D base_color_texture_sampler;
-layout(set = 1, binding = 2) uniform sampler2D normal_texture_sampler;
-layout(set = 1, binding = 3) uniform sampler2D metallic_texture_sampler;
-layout(set = 1, binding = 4) uniform sampler2D roughness_texture_sampler;
-layout(set = 1, binding = 5) uniform sampler2D occlusion_texture_sampler;
-layout(set = 1, binding = 6) uniform sampler2D emissive_color_texture_sampler;
+layout(set = 1, binding = 2) uniform sampler2D metallic_roughness_texture_sampler;
+layout(set = 1, binding = 3) uniform sampler2D normal_texture_sampler;
+layout(set = 1, binding = 4) uniform sampler2D occlusion_texture_sampler;
+layout(set = 1, binding = 5) uniform sampler2D emissive_color_texture_sampler;
 
 layout(location = 0) in vec3 in_world_position;
 layout(location = 1) in vec3 in_normal;
@@ -85,9 +84,9 @@ vec3 calculateNormal() {
 void main() {
     vec3  N                   = calculateNormal();
     vec3  base_color          = getBaseColor();
-    float metallic            = texture(metallic_texture_sampler, in_texcoord).x * metallic_factor;
+    float metallic            = texture(metallic_roughness_texture_sampler, in_texcoord).b * metallic_factor;
     float dielectric_specular = 0.04;
-    float roughness           = texture(roughness_texture_sampler, in_texcoord).x * roughness_factor;
+    float roughness           = texture(metallic_roughness_texture_sampler, in_texcoord).g * roughness_factor;
 
     vec3 result_color;
 

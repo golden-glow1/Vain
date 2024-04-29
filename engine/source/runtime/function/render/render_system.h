@@ -10,9 +10,9 @@
 #include "function/render/passes/tone_mapping_pass.h"
 #include "function/render/passes/ui_pass.h"
 #include "function/render/render_camera.h"
+#include "function/render/render_object.h"
 #include "function/render/render_resource.h"
 #include "function/render/render_scene.h"
-#include "function/render/render_swap_context.h"
 
 namespace Vain {
 
@@ -26,7 +26,6 @@ enum class PipelineType { FORWARD, DEFERRED };
 class RenderSystem {
   public:
     PipelineType pipeline_type = PipelineType::DEFERRED;
-    RenderSwapContext swap_context{};
 
     RenderSystem() = default;
     ~RenderSystem();
@@ -40,6 +39,8 @@ class RenderSystem {
 
     RenderCamera *getRenderCamera() { return m_render_camera.get(); }
 
+    void spawnObject(const std::string &url);
+
   private:
     std::unique_ptr<VulkanContext> m_ctx{};
     std::unique_ptr<RenderResource> m_render_resource{};
@@ -52,6 +53,8 @@ class RenderSystem {
     std::unique_ptr<ToneMappingPass> m_tone_mapping_pass{};
     std::unique_ptr<UIPass> m_ui_pass{};
     std::unique_ptr<CombineUIPass> m_combine_ui_pass{};
+
+    std::unordered_map<GObjectID, GameObject> m_gobjects;
 
     void processSwapData();
 

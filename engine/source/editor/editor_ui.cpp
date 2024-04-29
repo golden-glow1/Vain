@@ -1,7 +1,6 @@
 #include "editor_ui.h"
 
 #include <core/base/macro.h>
-#include <function/framework/world_manager.h>
 #include <function/global/global_context.h>
 #include <function/render/render_system.h>
 #include <function/render/window_system.h>
@@ -256,7 +255,10 @@ void EditorUI::initialize(WindowUIInitInfo init_info) {
     init_info.render_system->initializeUIRenderBackend(this);
 }
 
-void EditorUI::preRender() { showEditorFileContentWindow(&m_file_content_window_open); }
+void EditorUI::preRender() {
+    showEditorFileContentWindow(&m_file_content_window_open);
+    showObjectDetailWindow(&m_object_detail_window);
+}
 
 void EditorUI::clear() {}
 
@@ -270,8 +272,6 @@ std::string EditorUI::getLeafUINodeParentLabel() {
 
 void EditorUI::showEditorFileContentWindow(bool *p_open) {
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
-
-    const ImGuiViewport *main_viewport = ImGui::GetMainViewport();
 
     if (!*p_open) {
         return;
@@ -302,6 +302,21 @@ void EditorUI::showEditorFileContentWindow(bool *p_open) {
         EditorFileNode *editor_root_node = m_editor_file_service.getEditorRootNode();
         buildEditorFileAssetsUITree(editor_root_node);
         ImGui::EndTable();
+    }
+
+    ImGui::End();
+}
+
+void EditorUI::showObjectDetailWindow(bool *p_open) {
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
+
+    if (!*p_open) {
+        return;
+    }
+
+    if (!ImGui::Begin("Object Details", p_open, window_flags)) {
+        ImGui::End();
+        return;
     }
 
     ImGui::End();
@@ -340,13 +355,12 @@ void EditorUI::buildEditorFileAssetsUITree(EditorFileNode *node) {
 }
 
 void EditorUI::onFileContentItemClicked(EditorFileNode *node) {
-    if (node->file_type != "object") {
+    if (node->file_type != "gltf") {
         return;
     }
 
-    VAIN_INFO("Loading object: {}", node->file_path);
-
-    g_editor_global_context.world_manager->addObject(node->file_path);
+    g_editor_global_context.render_system->spawnObject(node->file_path);
+    VAIN_INFO("Loaded object: {}", node->file_path);
 }
 
 }  // namespace Vain

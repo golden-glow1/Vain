@@ -5,7 +5,6 @@
 
 #include "core/math/aabb.h"
 #include "core/math/transform.h"
-#include "function/framework/world_manager.h"
 #include "function/render/render_object.h"
 #include "resource/asset_type.h"
 
@@ -74,28 +73,6 @@ AutoReflectionRegister::AutoReflectionRegister() {
         .property("translation", &Transform::translation)
         .property("scale", &Transform::scale)
         .property("rotation", &Transform::rotation);
-
-    // game object
-    registration::class_<GameObjectMeshDesc>("GameObjectMeshDesc")
-        .property("mesh_file", &GameObjectMeshDesc::mesh_file);
-    registration::class_<GameObjectMaterialDesc>("GameObjectMaterialDesc")
-        .property(
-            "base_color_texture_file", &GameObjectMaterialDesc::base_color_texture_file
-        )
-        .property("normal_texture_file", &GameObjectMaterialDesc::normal_texture_file)
-        .property("metallic_texture_file", &GameObjectMaterialDesc::metallic_texture_file)
-        .property(
-            "roughness_texture_file", &GameObjectMaterialDesc::roughness_texture_file
-        )
-        .property(
-            "occlusion_texture_file", &GameObjectMaterialDesc::occlusion_texture_file
-        )
-        .property("emissive_texture_file", &GameObjectMaterialDesc::emissive_texture_file)
-        .property("with_texture", &GameObjectMaterialDesc::with_texture);
-    registration::class_<GameObjectDesc>("GameObjectDesc")
-        .property("mesh_desc", &GameObjectDesc::mesh_desc)
-        .property("material_desc", &GameObjectDesc::material_desc)
-        .property("transform", &GameObjectDesc::transform);
 }
 
 }  // namespace Vain

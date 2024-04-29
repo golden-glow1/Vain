@@ -60,9 +60,7 @@ void EditorFileService::buildEngineFileTree() {
                 if (type.length() == 0) {
                     continue;
                 }
-                if (type == ".json") {
-                    type = file_paths[file_index].stem().extension().generic_string();
-                }
+
                 file_node->file_type = type.substr(1);
                 file_node->file_path = file_paths[file_index]
                                            .lexically_relative(root_folder)

@@ -42,13 +42,14 @@ struct TextureData {
 struct MeshData {
     std::vector<MeshVertex> vertices{};
     std::vector<uint32_t> indices{};
+
+    AxisAlignedBoundingBox aabb{};
 };
 
 struct PBRMaterialData {
     std::shared_ptr<TextureData> base_color_texture{};
-    std::shared_ptr<TextureData> metallic_texture{};
-    std::shared_ptr<TextureData> roughness_texture{};
     std::shared_ptr<TextureData> normal_texture{};
+    std::shared_ptr<TextureData> metallic_roughness_texture{};
     std::shared_ptr<TextureData> occlusion_texture{};
     std::shared_ptr<TextureData> emissive_texture{};
 };
@@ -60,7 +61,5 @@ std::shared_ptr<TextureData> loadTextureHDR(
 std::shared_ptr<TextureData> loadTexture(const std::string &file, bool is_srgb = false);
 
 PBRMaterialData loadPBRMaterial(const PBRMaterialDesc &desc);
-
-MeshData loadMeshData(const std::string &file, AxisAlignedBoundingBox &aabb);
 
 }  // namespace Vain

@@ -1,7 +1,9 @@
 #pragma once
 
+#include <memory>
+#include <unordered_set>
+
 #include "function/render/render_entity.h"
-#include "function/render/render_object.h"
 #include "resource/asset_guid_allocator.h"
 #include "resource/asset_type.h"
 
@@ -12,8 +14,7 @@ class PBRMaterialResource;
 class RenderCamera;
 class RenderResource;
 
-struct RenderMeshNode {
-    size_t entity_id{};
+struct RenderNode {
     glm::mat4 model_matrix{1.0};
     const MeshResource *ref_mesh{};
     const PBRMaterialResource *ref_material{};
@@ -21,20 +22,18 @@ struct RenderMeshNode {
 
 class RenderScene {
   public:
-    AssetGuidAllocator<GObjectID> entity_id_allocator{};
     AssetGuidAllocator<MeshDesc> mesh_guid_allocator{};
     AssetGuidAllocator<PBRMaterialDesc> material_guid_allocator{};
-    std::unordered_map<MeshDesc, AxisAlignedBoundingBox> aabb_cache{};
 
     Color ambient_light{};
     DirectionalLightDesc directional_light{};
     std::vector<PointLightDesc> point_lights{};
 
-    std::vector<RenderEntity> render_entities{};
+    std::unordered_set<std::shared_ptr<RenderEntity>> render_entities{};
 
-    std::vector<RenderMeshNode> directional_light_visible_mesh_nodes{};
-    std::vector<RenderMeshNode> point_lights_visible_mesh_nodes{};
-    std::vector<RenderMeshNode> main_camera_visible_mesh_nodes{};
+    std::vector<RenderNode> directional_light_visible_mesh_nodes{};
+    std::vector<RenderNode> point_lights_visible_mesh_nodes{};
+    std::vector<RenderNode> main_camera_visible_mesh_nodes{};
 
     RenderScene() = default;
     ~RenderScene();

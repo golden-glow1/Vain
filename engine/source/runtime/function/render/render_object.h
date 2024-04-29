@@ -1,32 +1,57 @@
 #pragma once
 
-#include <functional>
-#include <string>
+#include <vector>
 
 #include "core/math/transform.h"
 #include "function/framework/object_id.h"
+#include "function/render/render_scene.h"
+#include "resource/asset_type.h"
+
+struct aiNode;
+struct aiScene;
 
 namespace Vain {
 
-struct GameObjectMeshDesc {
-    std::string mesh_file{};
+class RenderScene;
+class RenderResource;
+
+struct GameObjectNode {
+    glm::mat4 original_model{};
+    std::vector<std::shared_ptr<RenderEntity>> entities{};
+    std::vector<std::shared_ptr<GameObjectNode>> children{};
+
+    static std::shared_ptr<GameObjectNode> load(
+        const aiNode *node,
+        const aiScene *scene,
+        const std::string &file,
+        RenderScene &render_scene,
+        RenderResource &render_resource,
+        glm::mat4 parent_model
+    );
+
+    void clone(const std::shared_ptr<GameObjectNode> &node);
+
+    void updateTransform(glm::mat4 transform);
 };
 
-struct GameObjectMaterialDesc {
-    std::string base_color_texture_file{};
-    std::string normal_texture_file{};
-    std::string metallic_texture_file{};
-    std::string roughness_texture_file{};
-    std::string occlusion_texture_file{};
-    std::string emissive_texture_file{};
-    bool with_texture{false};
-};
-
-struct GameObjectDesc {
+class GameObject {
+  public:
+    std::string url{};
     GObjectID go_id{k_invalid_go_id};
-    GameObjectMeshDesc mesh_desc{};
-    GameObjectMaterialDesc material_desc{};
-    Transform transform{};
+    std::shared_ptr<GameObjectNode> root_node{};
+
+    void load(RenderScene &render_scene, RenderResource &render_resource);
+
+    void clone(const GameObject &gobject);
+
+    Transform getTransform() const { return m_transform; }
+    void updateTransform(Transform transform);
+
+    bool loaded() const { return m_loaded; }
+
+  private:
+    bool m_loaded{};
+    Transform m_transform{};
 };
 
 }  // namespace Vain

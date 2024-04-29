@@ -31,24 +31,23 @@ struct IBLDesc {
 };
 
 struct MeshDesc {
-    std::string mesh_file{};
+    std::string mesh_name{};
 
-    bool operator==(const MeshDesc &rhs) const { return mesh_file == rhs.mesh_file; }
+    bool operator==(const MeshDesc &rhs) const { return mesh_name == rhs.mesh_name; }
 };
 
 struct PBRMaterialDesc {
     std::string base_color_file{};
+    std::string metallic_roughness_file{};
     std::string normal_file{};
-    std::string metallic_file{};
-    std::string roughness_file{};
     std::string occlusion_file{};
     std::string emissive_file{};
 
     bool operator==(const PBRMaterialDesc &rhs) const {
-        return base_color_file == rhs.base_color_file && normal_file == rhs.normal_file &&
-               metallic_file == rhs.metallic_file &&
-               roughness_file == rhs.roughness_file &&
-               occlusion_file == rhs.occlusion_file && emissive_file == rhs.emissive_file;
+        return base_color_file == rhs.base_color_file &&
+               metallic_roughness_file == rhs.metallic_roughness_file &&
+               normal_file == rhs.normal_file && occlusion_file == rhs.occlusion_file &&
+               emissive_file == rhs.emissive_file;
     }
 };
 
@@ -104,7 +103,7 @@ namespace std {
 template <>
 struct hash<Vain::MeshDesc> {
     size_t operator()(const Vain::MeshDesc &desc) const {
-        return hash<std::string>{}(desc.mesh_file);
+        return hash<std::string>{}(desc.mesh_name);
     }
 };
 
@@ -116,8 +115,7 @@ struct hash<Vain::PBRMaterialDesc> {
             hash,
             desc.base_color_file,
             desc.normal_file,
-            desc.metallic_file,
-            desc.roughness_file,
+            desc.metallic_roughness_file,
             desc.occlusion_file,
             desc.emissive_file
         );

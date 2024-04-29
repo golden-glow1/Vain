@@ -17,7 +17,6 @@ void VainEditor::initialize(VainEngine *engine) {
     EditorGlobalContextInitInfo init_info{
         g_runtime_global_context.render_system.get(),
         g_runtime_global_context.window_system.get(),
-        g_runtime_global_context.world_manager.get(),
         engine
     };
     g_editor_global_context.initialize(init_info);
