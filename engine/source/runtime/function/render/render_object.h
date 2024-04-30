@@ -29,7 +29,7 @@ struct GameObjectNode {
         glm::mat4 parent_model
     );
 
-    void clone(const std::shared_ptr<GameObjectNode> &node);
+    void clone(const std::shared_ptr<GameObjectNode> &node, RenderScene &render_scene);
 
     void updateTransform(glm::mat4 transform);
 };
@@ -37,12 +37,13 @@ struct GameObjectNode {
 class GameObject {
   public:
     std::string url{};
+    std::string name{};
     GObjectID go_id{k_invalid_go_id};
     std::shared_ptr<GameObjectNode> root_node{};
 
     void load(RenderScene &render_scene, RenderResource &render_resource);
 
-    void clone(const GameObject &gobject);
+    void clone(const GameObject &gobject, RenderScene &render_scene);
 
     Transform getTransform() const { return m_transform; }
     void updateTransform(Transform transform);

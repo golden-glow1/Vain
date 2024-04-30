@@ -93,8 +93,7 @@ EditorUI::EditorUI() {
                 node_state =
                     ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_SpanFullWidth);
             } else {
-                g_editor_node_state_array.emplace_back(std::pair(name.c_str(), node_state)
-                );
+                g_editor_node_state_array.emplace_back(name.c_str(), node_state);
                 return;
             }
         } else {
@@ -220,7 +219,7 @@ EditorUI::EditorUI() {
         quat_ptr->w = val[3];
     };
 
-    m_editor_ui_creator["std::string"] =
+    m_editor_ui_creator["string"] =
         [this, &asset_folder](const std::string &name, void *value_ptr) -> void {
         if (g_node_depth == -1) {
             std::string label = "##" + name;
@@ -317,6 +316,18 @@ void EditorUI::showObjectDetailWindow(bool *p_open) {
     if (!ImGui::Begin("Object Details", p_open, window_flags)) {
         ImGui::End();
         return;
+    }
+
+    auto gobjects = g_runtime_global_context.render_system->getObjects();
+
+    for (auto go : gobjects) {
+        m_editor_ui_creator["TreeNodePush"](go->name, nullptr);
+        auto transform = go->getTransform();
+        m_editor_ui_creator["Transform"]("Transform", &transform);
+        if (transform != go->getTransform()) {
+            go->updateTransform(transform);
+        }
+        m_editor_ui_creator["TreeNodePop"](go->name, nullptr);
     }
 
     ImGui::End();

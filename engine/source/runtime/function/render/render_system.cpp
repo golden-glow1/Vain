@@ -120,8 +120,6 @@ void RenderSystem::initializeUIRenderBackend(WindowUI *window_ui) {
 }
 
 void RenderSystem::tick(float delta_time) {
-    processSwapData();
-
     m_render_resource->updatePerFrame(*m_render_scene, *m_render_camera);
 
     m_render_scene->updateVisibleNodes(*m_render_resource, *m_render_camera);
@@ -129,9 +127,39 @@ void RenderSystem::tick(float delta_time) {
     render();
 }
 
-void RenderSystem::spawnObject(const std::string &url) {}
+void RenderSystem::spawnObject(const std::string &url) {
+    GameObject go;
+    go.url = url;
+    go.name = std::filesystem::path{url}.filename().stem().generic_string();
 
-void RenderSystem::processSwapData() {}
+    auto iter = m_url_go.find(url);
+    if (iter == m_url_go.end()) {
+        go.load(*m_render_scene, *m_render_resource);
+        if (!go.loaded()) {
+            return;
+        }
+
+        m_url_go[url].insert(go.go_id);
+    } else {
+        auto url_set = iter->second;
+
+        go.clone(m_gobjects[*(url_set.begin())], *m_render_scene);
+
+        url_set.insert(go.go_id);
+    }
+
+    go.name += "::" + std::to_string(go.go_id);
+    m_gobjects[go.go_id] = go;
+}
+
+std::vector<GameObject *> RenderSystem::getObjects() {
+    std::vector<GameObject *> gobjects;
+    for (auto &[_, go] : m_gobjects) {
+        gobjects.push_back(&go);
+    }
+
+    return gobjects;
+}
 
 void RenderSystem::passUpdateAfterRecreateSwapchain() {
     m_main_pass->onResize();

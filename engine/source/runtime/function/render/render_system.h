@@ -41,6 +41,8 @@ class RenderSystem {
 
     void spawnObject(const std::string &url);
 
+    std::vector<GameObject *> getObjects();
+
   private:
     std::unique_ptr<VulkanContext> m_ctx{};
     std::unique_ptr<RenderResource> m_render_resource{};
@@ -54,9 +56,8 @@ class RenderSystem {
     std::unique_ptr<UIPass> m_ui_pass{};
     std::unique_ptr<CombineUIPass> m_combine_ui_pass{};
 
-    std::unordered_map<GObjectID, GameObject> m_gobjects;
-
-    void processSwapData();
+    std::unordered_map<std::string, std::unordered_set<GObjectID>> m_url_go{};
+    std::unordered_map<GObjectID, GameObject> m_gobjects{};
 
     void passUpdateAfterRecreateSwapchain();
 

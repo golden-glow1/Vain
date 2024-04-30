@@ -79,6 +79,7 @@ std::shared_ptr<GameObjectNode> GameObjectNode::load(
 
     for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
         auto entity = std::make_shared<RenderEntity>();
+        entity->model_matrix = go_node->original_model;
 
         aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
         MeshDesc mesh_desc = {url + "::" + mesh->mName.C_Str()};
@@ -149,16 +150,20 @@ std::shared_ptr<GameObjectNode> GameObjectNode::load(
     return go_node;
 }
 
-void GameObjectNode::clone(const std::shared_ptr<GameObjectNode> &node) {
+void GameObjectNode::clone(
+    const std::shared_ptr<GameObjectNode> &node, RenderScene &render_scene
+) {
     original_model = node->original_model;
     for (auto &entity : node->entities) {
         entities.emplace_back(std::make_shared<RenderEntity>(*entity));
         entities.back()->model_matrix = original_model;
+
+        render_scene.render_entities.insert(entities.back());
     }
 
     for (auto &child : node->children) {
         children.emplace_back(std::make_shared<GameObjectNode>());
-        children.back()->clone(child);
+        children.back()->clone(child, render_scene);
     }
 }
 
@@ -195,7 +200,7 @@ void GameObject::load(RenderScene &render_scene, RenderResource &render_resource
     m_loaded = true;
 }
 
-void GameObject::clone(const GameObject &gobject) {
+void GameObject::clone(const GameObject &gobject, RenderScene &render_scene) {
     if (!gobject.loaded()) {
         return;
     }
@@ -203,7 +208,7 @@ void GameObject::clone(const GameObject &gobject) {
     url = gobject.url;
     root_node = std::make_shared<GameObjectNode>();
 
-    root_node->clone(gobject.root_node);
+    root_node->clone(gobject.root_node, render_scene);
 
     go_id = ObjectIDAllocator::alloc();
     m_loaded = true;
