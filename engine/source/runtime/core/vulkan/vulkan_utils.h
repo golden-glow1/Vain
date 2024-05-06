@@ -3,6 +3,7 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
+#include <array>
 #include <vector>
 
 namespace Vain {
