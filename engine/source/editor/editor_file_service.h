@@ -11,31 +11,23 @@ struct EditorFileNode {
     std::string file_type{};
     std::string file_path{};
 
-    int node_depth{};
     std::vector<std::shared_ptr<EditorFileNode>> child_nodes{};
 
     EditorFileNode() = default;
     EditorFileNode(
-        const std::string &name,
-        const std::string &type,
-        const std::string &path,
-        int depth
+        const std::string &name, const std::string &type, const std::string &path
     )
-        : file_name(name), file_type(type), file_path(path), node_depth(depth) {}
+        : file_name(name), file_type(type), file_path(path) {}
 };
 
 class EditorFileService {
   public:
-    EditorFileNode *getEditorRootNode() {
-        return m_file_node_array.empty() ? nullptr : m_file_node_array[0].get();
-    }
+    EditorFileNode *getEditorRootNode() const { return m_root_node.get(); }
 
     void buildEngineFileTree();
 
   private:
-    std::vector<std::shared_ptr<EditorFileNode>> m_file_node_array;
-
-    EditorFileNode *findNodeInArray(EditorFileNode *file_node);
+    std::shared_ptr<EditorFileNode> m_root_node{};
 };
 
 }  // namespace Vain

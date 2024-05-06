@@ -1,0 +1,11 @@
+Model Information:
+* title:	Yacht
+* source:	https://sketchfab.com/3d-models/yacht-ae42c1609c25412cbfe40baf9728d987
+* author:	MesXwi (https://sketchfab.com/MesXwi)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Yacht" (https://sketchfab.com/3d-models/yacht-ae42c1609c25412cbfe40baf9728d987) by MesXwi (https://sketchfab.com/MesXwi) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
